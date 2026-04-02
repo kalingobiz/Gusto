@@ -16,6 +16,17 @@ Route::prefix('order')->name('customer.')->middleware(['throttle:60,1'])->group(
 // ─── Authenticated ───────────────────────────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
 
+    Route::get('/dashboard', function () {
+        $role = auth()->user()->role;
+        if ($role === 'kitchen') {
+            return redirect()->route('kitchen.index');
+        }
+        if ($role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('tables.index');
+    })->name('dashboard');
+
     // ── Profile (Breeze) ──────────────────────────────────────────────────────
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

@@ -10,13 +10,26 @@ use Inertia\Inertia;
 
 class IngredientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = Ingredient::query();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('name', 'like', "%{$search}%");
+        }
+
         return Inertia::render('Ingredients/Index', [
-            'ingredients' => Ingredient::orderBy('name')->get()->map(fn ($i) => [
-                ...$i->toArray(),
+            'ingredients' => $query->orderBy('name')->paginate(15)->through(fn ($i) => [
+                'id' => $i->id,
+                'name' => $i->name,
+                'unit' => $i->unit,
+                'current_stock' => $i->current_stock,
+                'reorder_level' => $i->reorder_level,
+                'cost_per_unit' => $i->cost_per_unit,
                 'is_low_stock' => $i->isLowStock(),
-            ]),
+            ])->withQueryString(),
+            'filters' => $request->only(['search']),
         ]);
     }
 

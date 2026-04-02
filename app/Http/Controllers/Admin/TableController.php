@@ -14,7 +14,7 @@ class TableController extends Controller
 
     public function index()
     {
-        return Inertia::render('Tables/Admin', [
+        return Inertia::render('Admin/Tables', [
             'tables' => RestaurantTable::withCount(['orders as today_orders' => function ($q) {
                 $q->whereDate('created_at', today());
             }])->orderBy('number')->get(),

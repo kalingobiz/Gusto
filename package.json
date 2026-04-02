@@ -23,6 +23,7 @@
     "dependencies": {
         "@vueuse/core": "^14.2.1",
         "laravel-echo": "^2.3.3",
+        "lodash": "^4.18.1",
         "pusher-js": "^8.5.0"
     }
 }
