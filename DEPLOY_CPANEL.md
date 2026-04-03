@@ -5,6 +5,17 @@
 
 ---
 
+## Database Strategy
+
+| Environment | Driver | Why |
+|---|---|---|
+| Local dev | SQLite (via `.env`) | Zero config, fast iteration |
+| Production | MySQL | Concurrent writes, cPanel native, auto-backup |
+
+The codebase defaults to MySQL. Local `.env` overrides it with `DB_CONNECTION=sqlite`.
+
+---
+
 ## 1. Pre-Deployment Checklist (Local)
 
 Before uploading, run the production build locally:
