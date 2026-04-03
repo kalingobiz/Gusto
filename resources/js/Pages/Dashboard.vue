@@ -7,6 +7,7 @@ const props = defineProps({
     recentOrders: Array,
     topItems: Array,
     lowStockIngredients: Array,
+    recentAdjustments: Array,
 });
 
 function currency(val) {
@@ -30,8 +31,8 @@ const statusColors = {
             <!-- Welcome Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-black italic tracking-tight">Executive Overview</h1>
-                    <p class="text-[var(--text-muted)] text-sm">Real-time performance metrics and operational pulse.</p>
+                    <h1 class="text-4xl font-heading font-black tracking-tight text-[var(--text-strong)]">Executive Overview</h1>
+                    <p class="text-[var(--text-muted)] font-medium">Real-time performance metrics and operational pulse.</p>
                 </div>
                 <div class="flex items-center gap-2 px-4 py-2 bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] shadow-sm">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -39,42 +40,91 @@ const statusColors = {
                 </div>
             </div>
 
+            <!-- Low Stock Alert Banner -->
+            <div v-if="lowStockIngredients?.length" class="glass-card border-2 border-[var(--danger)]/30 bg-[var(--danger)]/5 px-5 py-4 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="w-3 h-3 rounded-full bg-[var(--danger)] animate-pulse flex-shrink-0"></span>
+                    <p class="text-sm font-bold text-[var(--danger)]">
+                        {{ lowStockIngredients.length }} ingredient{{ lowStockIngredients.length > 1 ? 's' : '' }} below reorder level — immediate restock recommended.
+                    </p>
+                </div>
+                <Link :href="route('admin.ingredients.index')" class="btn-primary px-4 py-2 text-xs flex-shrink-0">
+                    Review Stock
+                </Link>
+            </div>
+
             <!-- Stats Grid -->
-            <div class="grid grid-cols-2 lg:grid-cols-5 gap-6">
+            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                 <!-- Revenue Card -->
-                <div class="glass-card p-6 border-l-4 border-emerald-500 shadow-lg shadow-emerald-500/5 relative overflow-hidden group">
+                <div class="glass-card p-5 relative overflow-hidden group btn-haptic border-t-2 border-emerald-500/40">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                    </div>
                     <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Today Revenue</div>
-                    <div class="text-3xl font-black italic text-[var(--text-strong)]">${{ currency(stats?.today_revenue) }}</div>
-                    <div class="absolute -right-4 -bottom-4 text-6xl opacity-[0.03] group-hover:scale-110 transition-transform">💰</div>
+                    <div class="text-2xl font-heading font-black text-[var(--text-strong)] truncate">${{ currency(stats?.today_revenue) }}</div>
                 </div>
 
                 <!-- Orders Count -->
-                <div class="glass-card p-6 border-l-4 border-[var(--brand)] shadow-lg shadow-[var(--brand-glow)] relative overflow-hidden group">
+                <div class="glass-card p-5 relative overflow-hidden group btn-haptic border-t-2 border-[var(--brand)]/40">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-9 h-9 rounded-xl bg-[var(--brand)]/10 border border-[var(--brand)]/20 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-[var(--brand)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        </div>
+                    </div>
                     <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Total Orders</div>
-                    <div class="text-3xl font-black italic text-[var(--text-strong)]">{{ stats?.today_orders }}</div>
-                    <div class="absolute -right-4 -bottom-4 text-6xl opacity-[0.03] group-hover:scale-110 transition-transform">📋</div>
+                    <div class="text-2xl font-heading font-black text-[var(--text-strong)]">{{ stats?.today_orders }}</div>
                 </div>
 
-                <!-- Active Sessions -->
-                <div class="glass-card p-6 border-l-4 border-blue-500 shadow-lg shadow-blue-500/5 relative overflow-hidden group">
+                <!-- Active Floor -->
+                <div class="glass-card p-5 relative overflow-hidden group btn-haptic border-t-2 border-blue-500/40">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        </div>
+                    </div>
                     <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Active Floor</div>
-                    <div class="text-3xl font-black italic text-blue-500">{{ stats?.active_orders }}</div>
-                    <div class="absolute -right-4 -bottom-4 text-6xl opacity-[0.03] group-hover:scale-110 transition-transform">🍽️</div>
+                    <div class="text-2xl font-heading font-black text-blue-500">{{ stats?.active_orders }}</div>
                 </div>
 
-                <!-- Low Stock -->
-                <div class="glass-card p-6 border-l-4 border-red-500 shadow-lg shadow-red-500/5 relative overflow-hidden group">
+                <!-- Critical Stock -->
+                <div class="glass-card p-5 relative overflow-hidden group btn-haptic border-t-2 border-red-500/40">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                        </div>
+                    </div>
                     <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Critical Stock</div>
-                    <div class="text-3xl font-black italic" :class="stats?.low_stock > 0 ? 'text-red-500 animate-pulse' : 'text-[var(--text-strong)]'">
+                    <div class="text-2xl font-heading font-black" :class="stats?.low_stock > 0 ? 'text-red-500 animate-pulse' : 'text-[var(--text-strong)]'">
                         {{ stats?.low_stock }}
                     </div>
                 </div>
 
-                <!-- Voids -->
-                <div class="glass-card p-6 border-l-4 border-gray-400 shadow-lg relative overflow-hidden group">
-                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Total Voids</div>
-                    <div class="text-3xl font-black italic text-[var(--text-strong)]">{{ stats?.today_voids }}</div>
+                <!-- Total Voids -->
+                <div class="glass-card p-5 relative overflow-hidden group border-t-2 border-gray-400/30">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-9 h-9 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                        </div>
+                    </div>
+                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Today Voids</div>
+                    <div class="text-2xl font-heading font-black text-[var(--text-strong)]">{{ stats?.today_voids }}</div>
                 </div>
+
+                <!-- Pending Audits -->
+                <Link :href="route('admin.stocktakes.index')" class="glass-card p-5 relative overflow-hidden group btn-haptic border-t-2 border-amber-500/40 block">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                        </div>
+                        <svg class="w-3.5 h-3.5 text-[var(--text-muted)] group-hover:text-[var(--brand)] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Pending Audits</div>
+                    <div class="text-2xl font-heading font-black" :class="stats?.pending_audits > 0 ? 'text-amber-500' : 'text-[var(--text-strong)]'">
+                        {{ stats?.pending_audits ?? 0 }}
+                    </div>
+                </Link>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -136,6 +186,25 @@ const statusColors = {
                                 </div>
                             </div>
                             <div v-if="!topItems?.length" class="p-10 text-center text-[var(--text-muted)] italic text-xs">Waiting for sales...</div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Adjustments -->
+                    <div v-if="recentAdjustments?.length" class="glass-card overflow-hidden">
+                        <div class="px-6 py-5 border-b border-[var(--border)] bg-[var(--bg-surface)] flex items-center justify-between">
+                            <h2 class="text-xs font-black uppercase tracking-widest text-[var(--text-strong)]">Recent Adjustments</h2>
+                            <Link :href="route('admin.ingredients.index')" class="text-[10px] font-black text-[var(--brand)] hover:underline uppercase tracking-widest">All →</Link>
+                        </div>
+                        <div class="divide-y divide-[var(--border)]">
+                            <div v-for="adj in recentAdjustments" :key="adj.id" class="px-6 py-3 flex items-center justify-between group hover:bg-[var(--bg-surface)] transition-all">
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-xs font-bold text-[var(--text-strong)] truncate">{{ adj.ingredient?.name }}</div>
+                                    <div class="text-[10px] font-bold text-[var(--text-muted)] capitalize">{{ adj.type?.replace('_', ' ') }}</div>
+                                </div>
+                                <span class="text-xs font-black font-mono ml-3 flex-shrink-0" :class="adj.quantity >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]'">
+                                    {{ adj.quantity >= 0 ? '+' : '' }}{{ Number(adj.quantity).toFixed(2) }}
+                                </span>
+                            </div>
                         </div>
                     </div>
 

@@ -1,56 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
     :root {
-        /* Premium Day Mode - Clean, Architectural, Soft */
+        /* Premium Day Mode - Bright, Architectural, Clean (Fast Casual Vibe) */
         --bg-main: #f8fafc;
         --bg-card: #ffffff;
         --bg-surface: #f1f5f9;
         --border: #e2e8f0;
+        
         --text-strong: #0f172a;
         --text-base: #334155;
         --text-muted: #64748b;
-        --brand: #f59e0b; /* Amber 500 */
-        --brand-hover: #d97706; /* Amber 600 */
-        --brand-glow: rgba(245, 158, 11, 0.2);
+        
+        /* Vibrant Actions */
+        --brand: #f97316; /* Orange 500 */
+        --brand-hover: #ea580c; /* Orange 600 */
+        --brand-glow: rgba(249, 115, 22, 0.2);
+        
+        /* Status Tracking */
+        --success: #10b981; /* Emerald 500 */
+        --danger: #ef4444; /* Red 500 */
+        --warning: #f59e0b; /* Amber 500 */
+        --info: #3b82f6; /* Blue 500 */
     }
 
     .dark {
-        /* Premium Night Mode - Immersive, High-Contrast 'Midnight' */
-        --bg-main: #0b0e14;
-        --bg-card: #161b22;
-        --bg-surface: #1c2128;
-        --border: #30363d;
-        --text-strong: #f0f6fc;
-        --text-base: #c9d1d9;
-        --text-muted: #8b949e;
-        --brand: #fbbf24; /* Amber 400 - brighter for dark mode */
-        --brand-hover: #f59e0b;
-        --brand-glow: rgba(251, 191, 36, 0.15);
+        /* Premium Night Mode - "Midnight" Fine Dining / KDS Vibe */
+        --bg-main: #0B0E14; /* Deep Abyss */
+        --bg-card: #141A23; /* Elevated Surface */
+        --bg-surface: #1E2631; /* Interactive Surface */
+        --border: #2A3441; /* Soft Stroke */
+        
+        --text-strong: #F8FAFC;
+        --text-base: #CBD5E1;
+        --text-muted: #64748B;
+        
+        --brand: #FB923C; /* Orange 400 */
+        --brand-hover: #F97316;
+        --brand-glow: rgba(251, 146, 60, 0.15);
+
+        --success: #10B981;
+        --danger: #EF4444;
+        --warning: #FBBF24;
+        --info: #60A5FA;
     }
 
     body {
-        @apply bg-[var(--bg-main)] text-[var(--text-base)] antialiased transition-colors duration-300;
+        background-color: var(--bg-main);
+        color: var(--text-base);
+        @apply antialiased;
+        transition: background-color 300ms, color 300ms;
         font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+        /* Force touch manipulation globally to prevent zoom on tap on iPads */
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    h1, h2, h3, h4, h5, h6 {
-        @apply text-[var(--text-strong)] font-bold tracking-tight;
+    /* Assigning the premium font to headings */
+    h1, h2, h3, h4, h5, h6, .font-heading {
+        font-family: 'Outfit', sans-serif;
+        color: var(--text-strong);
+        @apply font-semibold tracking-tight;
     }
 }
 
 @layer components {
+    /* Premium App Panels & Cards */
+    .glass-panel {
+        background-color: color-mix(in srgb, var(--bg-card) 80%, transparent);
+        @apply border border-[var(--border)] shadow-sm backdrop-blur-xl rounded-2xl;
+    }
+    
     .glass-card {
-        @apply bg-[var(--bg-card)] border border-[var(--border)] shadow-sm backdrop-blur-md rounded-2xl;
+        background-color: color-mix(in srgb, var(--bg-card) 90%, transparent);
+        @apply border border-[var(--border)] shadow-sm rounded-2xl transition-all duration-300;
+    }
+    
+    .glass-card:hover {
+        @apply shadow-md;
+        border-color: color-mix(in srgb, var(--brand) 30%, transparent);
     }
 
+    /* POS Massive Tap Targets */
+    .tap-target {
+        @apply min-h-[56px] min-w-[56px] flex items-center justify-center;
+    }
+
+    /* Touch-Optimized Haptic Buttons */
+    .btn-haptic {
+        @apply relative overflow-hidden active:scale-[0.98] transition-transform duration-100 ease-out select-none;
+    }
+
+    .btn-primary {
+        @apply btn-haptic bg-[var(--brand)] text-white font-bold rounded-xl shadow-md shadow-[var(--brand-glow)] hover:bg-[var(--brand-hover)] border border-transparent;
+    }
+    
+    .btn-secondary {
+        @apply btn-haptic font-bold rounded-xl border transition-colors;
+        background-color: var(--bg-surface);
+        color: var(--text-strong);
+        border-color: var(--border);
+    }
+    
+    .btn-danger {
+        @apply btn-haptic bg-[var(--danger)] text-white font-bold rounded-xl shadow-md shadow-red-500/20 hover:bg-red-600 border border-transparent;
+    }
+
+    /* Interactive Icon Buttons */
     .btn-icon {
-        @apply p-2 rounded-xl border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--brand)] hover:border-[var(--brand)] hover:bg-[var(--brand-glow)] transition-all duration-200;
+        @apply tap-target rounded-xl border transition-all duration-200 active:scale-95;
+        background-color: var(--bg-surface);
+        color: var(--text-muted);
+        border-color: var(--border);
+    }
+    
+    .btn-icon:hover {
+        color: var(--brand);
+        border-color: var(--brand);
+        background-color: var(--brand-glow);
     }
 
+    /* Inputs tailored for quick POS tapping or scanning */
     .input-premium {
-        @apply w-full bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-base)] rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-[var(--brand)] focus:border-transparent transition-all outline-none placeholder:text-[var(--text-muted)];
+        @apply w-full font-medium rounded-xl px-4 py-3 sm:py-2.5 focus:ring-2 focus:ring-[var(--brand)] focus:border-transparent transition-all outline-none;
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border);
+        color: var(--text-strong);
     }
+    .input-premium::placeholder {
+        color: var(--text-muted);
+    }
+}
+
+/* Custom Scrollbar for POS */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-muted);
 }

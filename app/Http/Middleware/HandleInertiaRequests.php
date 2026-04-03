@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Ingredient;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -44,6 +45,9 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
             ],
+            'lowStockCount' => fn () => $request->user() && $request->user()->role === 'admin'
+                ? Ingredient::lowStock()->count()
+                : 0,
         ];
     }
 }

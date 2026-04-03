@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
@@ -7,6 +7,18 @@ const user = computed(() => page.props.auth.user);
 const flash = computed(() => page.props.flash);
 const sidebarOpen = ref(false);
 const isDark = ref(localStorage.getItem('theme') === 'dark');
+
+// Live clock
+const clock = ref('');
+let clockTimer;
+function updateClock() {
+    const now = new Date();
+    clock.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+if (typeof window !== 'undefined') {
+    updateClock();
+    clockTimer = setInterval(updateClock, 30000);
+}
 
 const toggleTheme = () => {
     isDark.value = !isDark.value;
@@ -26,6 +38,8 @@ if (isDark.value) {
     document.documentElement.classList.remove('dark');
 }
 
+onUnmounted(() => clearInterval(clockTimer));
+
 const navItems = computed(() => {
     const role = user.value?.role;
     const items = [];
@@ -37,6 +51,7 @@ const navItems = computed(() => {
         dashboard: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />',
         menu: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />',
         ingredients: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />',
+        audits: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>',
         bom: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m16.5 0H21m-7.5 0V3.375m0 17.25V21M7.03 7.03L6.108 6.107m11.784 11.784l-.922-.923m0-11.784l.922-.923M6.108 17.893l.922-.923" />',
         tables: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M19.5 3v11.25a2.25 2.25 0 01-2.25 2.25H15m-6.75 0v3a2.25 2.25 0 002.25 2.25h3a2.25 2.25 0 002.25-2.25v-3M3.75 7.5h16.5M5.625 7.5v6.75m12.75-6.75v6.75" />',
         staff: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.998 5.998 0 00-5.484-5.934c-.753-.059-1.516-.059-2.27 0A5.998 5.998 0 006 18.72m12 0a9 9 0 00-18 0" />',
@@ -53,6 +68,7 @@ const navItems = computed(() => {
         items.push({ label: 'Dashboard', href: route('admin.dashboard'), icon: icons.dashboard });
         items.push({ label: 'Menu', href: route('admin.menu.index'), icon: icons.menu });
         items.push({ label: 'Ingredients', href: route('admin.ingredients.index'), icon: icons.ingredients });
+        items.push({ label: 'Audits', href: route('admin.stocktakes.index'), icon: icons.audits });
         items.push({ label: 'BOM', href: route('admin.bom.index'), icon: icons.bom });
         items.push({ label: 'Tables', href: route('admin.tables.admin'), icon: icons.tables });
         items.push({ label: 'Staff', href: route('admin.users.index'), icon: icons.staff });
@@ -82,7 +98,7 @@ const isActive = (href) => {
             <div class="flex items-center justify-between px-6 py-6">
                 <div class="flex items-center gap-3">
                     <span class="text-2xl">🍴</span>
-                    <span class="text-xl font-black tracking-tight text-[var(--text-strong)]">Gusto</span>
+                    <span class="text-xl font-heading font-black tracking-tight text-[var(--text-strong)]">Gusto</span>
                 </div>
                 <button @click="sidebarOpen = false" class="lg:hidden text-[var(--text-muted)] hover:text-[var(--text-strong)]">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -112,9 +128,9 @@ const isActive = (href) => {
                 <!-- Theme Toggle -->
                 <button 
                     @click="toggleTheme" 
-                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-strong)] hover:border-[var(--brand)] transition-all"
+                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-strong)] hover:border-[var(--brand)] hover:bg-[var(--brand-glow)] btn-haptic transition-all"
                 >
-                    <span class="text-sm font-medium">{{ isDark ? 'Night Mode' : 'Day Mode' }}</span>
+                    <span class="text-sm font-semibold">{{ isDark ? 'Night Mode' : 'Day Mode' }}</span>
                     <span class="text-lg">{{ isDark ? '🌙' : '☀️' }}</span>
                 </button>
 
@@ -131,7 +147,7 @@ const isActive = (href) => {
                     :href="route('logout')"
                     method="post"
                     as="button"
-                    class="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-red-200/50 text-red-600 text-xs font-bold hover:bg-red-50 dark:border-red-900/20 dark:hover:bg-red-900/10 transition-all duration-300 active:scale-95 group"
+                    class="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-red-500/20 text-[var(--danger)] text-sm font-bold hover:bg-red-500/10 btn-haptic transition-all duration-300 group"
                 >
                     <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                     Sign out
@@ -142,18 +158,39 @@ const isActive = (href) => {
         <!-- Main content -->
         <div class="flex-1 flex flex-col min-w-0 bg-[var(--bg-main)]">
             <!-- Top bar -->
-            <header class="bg-[var(--bg-card)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+            <header class="bg-[var(--bg-card)]/80 backdrop-blur-xl border-b border-[var(--border)] px-6 py-3.5 flex items-center justify-between sticky top-0 z-40 shadow-sm">
                 <div class="flex items-center gap-4">
-                    <button @click="sidebarOpen = true" class="lg:hidden text-[var(--text-muted)]">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    <button @click="sidebarOpen = true" class="lg:hidden btn-icon">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
-                    <h2 class="text-lg font-bold text-[var(--text-strong)] hidden lg:block">Gusto POS Dashboard</h2>
+                    <!-- Dynamic page title slot -->
+                    <div class="hidden lg:block">
+                        <slot name="header">
+                            <span class="text-lg font-heading font-bold text-[var(--text-strong)]">Gusto Prime</span>
+                        </slot>
+                    </div>
                 </div>
                 
-                <div class="flex items-center gap-4">
-                    <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Live System Connected
+                <div class="flex items-center gap-3">
+                    <!-- Low stock alert -->
+                    <Link
+                        v-if="page.props.lowStockCount > 0"
+                        :href="route('admin.ingredients.index')"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--danger)]/10 border border-[var(--danger)]/20 text-[var(--danger)] text-xs font-black animate-pulse"
+                    >
+                        <span class="w-1.5 h-1.5 rounded-full bg-[var(--danger)] flex-shrink-0"></span>
+                        {{ page.props.lowStockCount }} Low Stock
+                    </Link>
+
+                    <!-- Live indicator -->
+                    <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-black">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Live
+                    </div>
+
+                    <!-- Clock -->
+                    <div class="hidden md:flex items-center px-3 py-1.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] text-xs font-black text-[var(--text-strong)] font-mono tracking-wider">
+                        {{ clock }}
                     </div>
                 </div>
             </header>
@@ -162,13 +199,13 @@ const isActive = (href) => {
             <div v-if="flash?.success || flash?.error" class="px-6 pt-4">
                 <div
                     v-if="flash.success"
-                    class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm"
+                    class="bg-[var(--success)]/10 border border-[var(--success)]/30 text-[var(--success)] px-4 py-3 rounded-lg text-sm font-medium"
                 >
                     {{ flash.success }}
                 </div>
                 <div
                     v-if="flash.error"
-                    class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm"
+                    class="bg-[var(--danger)]/10 border border-[var(--danger)]/30 text-[var(--danger)] px-4 py-3 rounded-lg text-sm font-medium"
                 >
                     {{ flash.error }}
                 </div>

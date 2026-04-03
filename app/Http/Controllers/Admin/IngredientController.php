@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ingredient;
 use App\Models\StockIntake;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class IngredientController extends Controller
@@ -19,6 +20,10 @@ class IngredientController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
 
+        if ($request->get('filter') === 'low_stock') {
+            $query->lowStock();
+        }
+
         return Inertia::render('Ingredients/Index', [
             'ingredients' => $query->orderBy('name')->paginate(15)->through(fn ($i) => [
                 'id' => $i->id,
@@ -29,7 +34,7 @@ class IngredientController extends Controller
                 'cost_per_unit' => $i->cost_per_unit,
                 'is_low_stock' => $i->isLowStock(),
             ])->withQueryString(),
-            'filters' => $request->only(['search']),
+            'filters' => $request->only(['search', 'filter']),
         ]);
     }
 
@@ -82,10 +87,21 @@ class IngredientController extends Controller
 
         $data['user_id'] = auth()->id();
 
-        StockIntake::create($data);
+        $ingredient = Ingredient::find($data['ingredient_id']);
 
-        Ingredient::where('id', $data['ingredient_id'])
-            ->increment('current_stock', $data['quantity']);
+        DB::transaction(function () use ($data, $ingredient) {
+            $intake = StockIntake::create($data);
+
+            $ingredient->increment('current_stock', $data['quantity']);
+
+            $intake->stockMovements()->create([
+                'ingredient_id' => $ingredient->id,
+                'user_id' => auth()->id(),
+                'quantity_change' => $data['quantity'],
+                'balance_after' => $ingredient->fresh()->current_stock,
+                'notes' => 'Intake from ' . ($data['supplier'] ?? 'Unknown Supplier'),
+            ]);
+        });
 
         return back()->with('success', 'Stock intake recorded.');
     }

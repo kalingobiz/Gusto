@@ -14,18 +14,28 @@ class BomService
     {
         $bomItems = $orderItem->menuItem->bomItems()->with('ingredient')->get();
 
-        foreach ($bomItems as $bom) {
-            $qty = $bom->quantity_per_serving * $orderItem->quantity;
+        DB::transaction(function () use ($orderItem, $bomItems) {
+            foreach ($bomItems as $bom) {
+                $qty = $bom->quantity_per_serving * $orderItem->quantity;
 
-            StockDeduction::create([
-                'order_item_id' => $orderItem->id,
-                'ingredient_id' => $bom->ingredient_id,
-                'expected_qty'  => $qty,
-            ]);
+                $deduction = StockDeduction::create([
+                    'order_item_id' => $orderItem->id,
+                    'ingredient_id' => $bom->ingredient_id,
+                    'expected_qty'  => $qty,
+                ]);
 
-            Ingredient::where('id', $bom->ingredient_id)
-                ->decrement('current_stock', $qty);
-        }
+                $ingredient = Ingredient::find($bom->ingredient_id);
+                $ingredient->decrement('current_stock', $qty);
+
+                $deduction->stockMovements()->create([
+                    'ingredient_id' => $ingredient->id,
+                    'user_id' => null, // Processed by system
+                    'quantity_change' => -$qty,
+                    'balance_after' => $ingredient->fresh()->current_stock,
+                    'notes' => 'Deduction for Order Item #' . $orderItem->id,
+                ]);
+            }
+        });
     }
 
     public function reverseDeduction(OrderItem $orderItem): void
@@ -34,15 +44,25 @@ class BomService
             ->where('reversed', false)
             ->get();
 
-        foreach ($deductions as $deduction) {
-            Ingredient::where('id', $deduction->ingredient_id)
-                ->increment('current_stock', $deduction->expected_qty);
+        DB::transaction(function () use ($orderItem, $deductions) {
+            foreach ($deductions as $deduction) {
+                $ingredient = Ingredient::find($deduction->ingredient_id);
+                $ingredient->increment('current_stock', $deduction->expected_qty);
 
-            $deduction->update([
-                'reversed'    => true,
-                'reversed_at' => now(),
-            ]);
-        }
+                $deduction->update([
+                    'reversed'    => true,
+                    'reversed_at' => now(),
+                ]);
+
+                $deduction->stockMovements()->create([
+                    'ingredient_id' => $ingredient->id,
+                    'user_id' => auth()->id(),
+                    'quantity_change' => $deduction->expected_qty,
+                    'balance_after' => $ingredient->fresh()->current_stock,
+                    'notes' => 'Void/Reversal for Order Item #' . $orderItem->id,
+                ]);
+            }
+        });
     }
 
     public function getVarianceReport(Carbon $dateFrom, Carbon $dateTo): array

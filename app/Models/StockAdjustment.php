@@ -4,17 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class StockIntake extends Model
+class StockAdjustment extends Model
 {
     protected $fillable = [
-        'ingredient_id', 'user_id', 'quantity', 'cost_per_unit',
-        'supplier', 'reference', 'intake_date', 'notes',
+        'ingredient_id', 'user_id', 'type', 'quantity', 'notes'
     ];
 
     protected $casts = [
         'quantity' => 'decimal:4',
-        'cost_per_unit' => 'decimal:4',
-        'intake_date' => 'date',
     ];
 
     public function ingredient()
@@ -26,6 +23,7 @@ class StockIntake extends Model
     {
         return $this->belongsTo(User::class);
     }
+
     public function stockMovements()
     {
         return $this->morphMany(StockMovement::class, 'source');

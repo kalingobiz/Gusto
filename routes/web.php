@@ -13,6 +13,13 @@ Route::prefix('order')->name('customer.')->middleware(['throttle:60,1'])->group(
     Route::post('/{tableToken}', [Customer\OrderController::class, 'place'])->name('place');
 });
 
+Route::get('/test-pos', function () {
+    return inertia('TestPOS');
+});
+Route::get('/test-kds', function () {
+    return inertia('TestKDS');
+});
+
 // ─── Authenticated ───────────────────────────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
 
@@ -41,6 +48,7 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/orders/{order}/served', [Cashier\OrderController::class, 'markServed'])->name('orders.served');
         Route::post('/orders/{order}/void/{item}', [Cashier\OrderController::class, 'voidItem'])->name('orders.void-item');
         Route::post('/payments', [Cashier\PaymentController::class, 'store'])->name('payments.store');
+        Route::patch('/tables/{table}/clear', [Admin\TableController::class, 'clear'])->name('tables.clear');
     });
 
     // ── Kitchen Display ───────────────────────────────────────────────────────
@@ -75,6 +83,15 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/ingredients/{ingredient}', [Admin\IngredientController::class, 'destroy'])->name('ingredients.destroy');
         Route::post('/ingredients/intake', [Admin\IngredientController::class, 'intake'])->name('ingredients.intake');
         Route::get('/ingredients/{ingredient}/history', [Admin\IngredientController::class, 'intakeHistory'])->name('ingredients.history');
+        Route::get('/ingredients/{ingredient}/movements', [Admin\StockMovementController::class, 'index'])->name('ingredients.movements');
+        Route::post('/ingredients/adjust', [Admin\StockAdjustmentController::class, 'store'])->name('ingredients.adjust');
+
+        // Stocktakes
+        Route::get('/stocktakes', [Admin\StocktakeController::class, 'index'])->name('stocktakes.index');
+        Route::get('/stocktakes/create', [Admin\StocktakeController::class, 'create'])->name('stocktakes.create');
+        Route::post('/stocktakes', [Admin\StocktakeController::class, 'store'])->name('stocktakes.store');
+        Route::get('/stocktakes/{stocktake}', [Admin\StocktakeController::class, 'show'])->name('stocktakes.show');
+        Route::post('/stocktakes/{stocktake}/complete', [Admin\StocktakeController::class, 'complete'])->name('stocktakes.complete');
 
         // BOM
         Route::get('/bom', [Admin\BomController::class, 'index'])->name('bom.index');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\TableStatusChanged;
 use App\Http\Controllers\Controller;
 use App\Models\RestaurantTable;
 use App\Services\QrCodeService;
@@ -47,6 +48,13 @@ class TableController extends Controller
         $table->update($data);
 
         return back()->with('success', 'Table updated.');
+    }
+
+    public function clear(RestaurantTable $table)
+    {
+        $table->update(['status' => 'available']);
+        broadcast(new TableStatusChanged($table));
+        return back()->with('success', 'Table cleared.');
     }
 
     public function destroy(RestaurantTable $table)

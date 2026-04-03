@@ -1,7 +1,6 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { useForm } from '@inertiajs/vue3';
-import { Link } from '@inertiajs/vue3';
+import { useForm, Link } from '@inertiajs/vue3';
 
 const props = defineProps({
     from: String,
@@ -22,92 +21,99 @@ function currency(v) { return Number(v || 0).toFixed(2); }
 
 <template>
     <AppLayout>
-        <div class="space-y-4">
-            <div class="flex items-center justify-between flex-wrap gap-2">
-                <h1 class="text-2xl font-bold text-gray-900">Sales Report</h1>
-                <div class="flex gap-2 text-sm">
-                    <Link :href="route('admin.reports.bom-variance')" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">BOM Variance</Link>
-                    <Link :href="route('admin.reports.voids')" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">Void Log</Link>
-                    <Link :href="route('admin.reports.audit')" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">Audit Trail</Link>
+        <div class="space-y-6 max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h1 class="text-3xl font-black text-[var(--text-strong)]">Sales Report</h1>
+                <div class="flex gap-2 text-xs">
+                    <Link :href="route('admin.reports.bom-variance')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">BOM Variance</Link>
+                    <Link :href="route('admin.reports.voids')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">Void Log</Link>
+                    <Link :href="route('admin.reports.audit')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">Audit Trail</Link>
                 </div>
             </div>
 
             <!-- Date filter -->
-            <div class="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-center gap-3 flex-wrap">
-                <input v-model="filterForm.from" type="date" class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm" />
-                <span class="text-gray-400 text-sm">to</span>
-                <input v-model="filterForm.to" type="date" class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm" />
-                <button @click="applyFilter" class="px-4 py-1.5 bg-amber-500 text-white rounded-lg text-sm hover:bg-amber-600">Apply</button>
+            <div class="glass-card px-5 py-4 flex items-center gap-3 flex-wrap">
+                <input v-model="filterForm.from" type="date" class="input-premium py-1.5 text-sm" />
+                <span class="text-[var(--text-muted)] text-xs font-bold uppercase">to</span>
+                <input v-model="filterForm.to" type="date" class="input-premium py-1.5 text-sm" />
+                <button @click="applyFilter" class="btn-primary px-4 py-2 text-xs font-bold uppercase tracking-widest">Apply</button>
             </div>
 
             <!-- Summary Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-white rounded-xl p-4 border border-gray-200">
-                    <div class="text-sm text-gray-500">Total Revenue</div>
-                    <div class="text-2xl font-bold text-gray-900 mt-1">${{ currency(summary?.revenue) }}</div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div class="glass-card p-6 border-l-4 border-emerald-500">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Total Revenue</div>
+                    <div class="text-3xl font-heading font-black text-[var(--text-strong)]">${{ currency(summary?.revenue) }}</div>
                 </div>
-                <div class="bg-white rounded-xl p-4 border border-gray-200">
-                    <div class="text-sm text-gray-500">Paid Orders</div>
-                    <div class="text-2xl font-bold text-gray-900 mt-1">{{ summary?.order_count ?? 0 }}</div>
+                <div class="glass-card p-6 border-l-4 border-[var(--brand)]">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Paid Orders</div>
+                    <div class="text-3xl font-heading font-black text-[var(--text-strong)]">{{ summary?.order_count ?? 0 }}</div>
                 </div>
-                <div class="bg-white rounded-xl p-4 border border-gray-200">
-                    <div class="text-sm text-gray-500">Tax Collected</div>
-                    <div class="text-2xl font-bold text-gray-900 mt-1">${{ currency(summary?.tax_collected) }}</div>
+                <div class="glass-card p-6 border-l-4 border-blue-500">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Tax Collected</div>
+                    <div class="text-3xl font-heading font-black text-[var(--text-strong)]">${{ currency(summary?.tax_collected) }}</div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Top Items -->
-                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <div class="px-4 py-3 border-b border-gray-100 font-semibold text-gray-800">Top Items by Revenue</div>
+                <div class="glass-card overflow-hidden">
+                    <div class="px-5 py-4 border-b border-[var(--border)] bg-[var(--bg-surface)]">
+                        <h2 class="text-xs font-black uppercase tracking-widest text-[var(--text-strong)]">Top Items by Revenue</h2>
+                    </div>
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th class="text-left px-4 py-2 font-medium text-gray-600">Item</th>
-                                <th class="text-right px-4 py-2 font-medium text-gray-600">Qty</th>
-                                <th class="text-right px-4 py-2 font-medium text-gray-600">Revenue</th>
+                        <thead>
+                            <tr class="bg-[var(--bg-surface)] text-[var(--text-muted)] text-[10px] font-black uppercase tracking-widest border-b border-[var(--border)]">
+                                <th class="text-left px-5 py-3">Item</th>
+                                <th class="text-right px-5 py-3">Qty</th>
+                                <th class="text-right px-5 py-3">Revenue</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-50">
-                            <tr v-for="item in byItem" :key="item.id">
-                                <td class="px-4 py-2">
-                                    <div class="font-medium text-gray-900">{{ item.name }}</div>
-                                    <div class="text-xs text-gray-400">{{ item.category }}</div>
+                        <tbody class="divide-y divide-[var(--border)]">
+                            <tr v-for="item in byItem" :key="item.id" class="hover:bg-[var(--bg-surface)] transition-colors">
+                                <td class="px-5 py-3">
+                                    <div class="font-bold text-[var(--text-strong)]">{{ item.name }}</div>
+                                    <div class="text-[10px] text-[var(--text-muted)] uppercase">{{ item.category }}</div>
                                 </td>
-                                <td class="px-4 py-2 text-right text-gray-700">{{ item.total_qty }}</td>
-                                <td class="px-4 py-2 text-right font-medium text-gray-900">${{ currency(item.total_revenue) }}</td>
+                                <td class="px-5 py-3 text-right font-mono text-[var(--text-base)]">{{ item.total_qty }}</td>
+                                <td class="px-5 py-3 text-right font-mono font-bold text-emerald-500">${{ currency(item.total_revenue) }}</td>
                             </tr>
                             <tr v-if="!byItem?.length">
-                                <td colspan="3" class="px-4 py-4 text-center text-gray-400 text-sm">No data</td>
+                                <td colspan="3" class="px-5 py-8 text-center text-[var(--text-muted)] italic text-sm">No data</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <!-- Payment Methods + Daily -->
-                <div class="space-y-4">
-                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                        <div class="px-4 py-3 border-b border-gray-100 font-semibold text-gray-800">Payment Methods</div>
-                        <div class="divide-y divide-gray-50">
-                            <div v-for="p in byPaymentMethod" :key="p.method" class="px-4 py-3 flex items-center justify-between text-sm">
-                                <div class="font-medium text-gray-900 capitalize">{{ p.method.replace('_', ' ') }}</div>
+                <div class="space-y-6">
+                    <div class="glass-card overflow-hidden">
+                        <div class="px-5 py-4 border-b border-[var(--border)] bg-[var(--bg-surface)]">
+                            <h2 class="text-xs font-black uppercase tracking-widest text-[var(--text-strong)]">Payment Methods</h2>
+                        </div>
+                        <div class="divide-y divide-[var(--border)]">
+                            <div v-for="p in byPaymentMethod" :key="p.method" class="px-5 py-3 flex items-center justify-between hover:bg-[var(--bg-surface)] transition-colors">
+                                <span class="text-sm font-bold text-[var(--text-strong)] capitalize">{{ p.method.replace('_', ' ') }}</span>
                                 <div class="text-right">
-                                    <div class="font-bold text-gray-900">${{ currency(p.total) }}</div>
-                                    <div class="text-xs text-gray-400">{{ p.count }} transactions</div>
+                                    <div class="font-black font-mono text-emerald-500">${{ currency(p.total) }}</div>
+                                    <div class="text-[10px] text-[var(--text-muted)] font-bold">{{ p.count }} transactions</div>
                                 </div>
                             </div>
-                            <div v-if="!byPaymentMethod?.length" class="px-4 py-4 text-center text-sm text-gray-400">No payments</div>
+                            <div v-if="!byPaymentMethod?.length" class="px-5 py-6 text-center text-sm text-[var(--text-muted)] italic">No payments</div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                        <div class="px-4 py-3 border-b border-gray-100 font-semibold text-gray-800">Daily Breakdown</div>
-                        <div class="divide-y divide-gray-50 max-h-52 overflow-y-auto">
-                            <div v-for="d in byDay" :key="d.date" class="px-4 py-2 flex items-center justify-between text-sm">
-                                <span class="text-gray-600">{{ d.date }}</span>
+                    <div class="glass-card overflow-hidden">
+                        <div class="px-5 py-4 border-b border-[var(--border)] bg-[var(--bg-surface)]">
+                            <h2 class="text-xs font-black uppercase tracking-widest text-[var(--text-strong)]">Daily Breakdown</h2>
+                        </div>
+                        <div class="divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
+                            <div v-for="d in byDay" :key="d.date" class="px-5 py-2.5 flex items-center justify-between hover:bg-[var(--bg-surface)] transition-colors">
+                                <span class="text-sm text-[var(--text-muted)] font-medium">{{ d.date }}</span>
                                 <div class="text-right">
-                                    <div class="font-medium text-gray-900">${{ currency(d.revenue) }}</div>
-                                    <div class="text-xs text-gray-400">{{ d.orders }} orders</div>
+                                    <div class="font-bold font-mono text-[var(--text-strong)]">${{ currency(d.revenue) }}</div>
+                                    <div class="text-[10px] text-[var(--text-muted)] font-bold">{{ d.orders }} orders</div>
                                 </div>
                             </div>
                         </div>

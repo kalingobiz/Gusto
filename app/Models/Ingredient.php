@@ -30,6 +30,20 @@ class Ingredient extends Model
     {
         return $this->hasMany(StockDeduction::class);
     }
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
+    public function stockAdjustments()
+    {
+        return $this->hasMany(StockAdjustment::class);
+    }
+
+    public function stocktakeItems()
+    {
+        return $this->hasMany(StocktakeItem::class);
+    }
 
     public function isLowStock(): bool
     {

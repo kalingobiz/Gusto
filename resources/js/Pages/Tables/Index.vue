@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
 
@@ -8,6 +8,11 @@ const props = defineProps({
 });
 
 const tables = ref(props.tables);
+
+// Keep tables in sync when Inertia refreshes props
+watch(() => props.tables, (updated) => {
+    tables.value = updated;
+}, { deep: true });
 
 const statusColors = {
     available: 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-strong)] hover:border-emerald-500/50',
@@ -52,7 +57,7 @@ function openOrder(table) {
 }
 
 function markClean(table) {
-    router.patch(route('tables.update', table.id), { status: 'available' }, { preserveScroll: true });
+    router.patch(route('tables.clear', table.id), {}, { preserveScroll: true });
 }
 </script>
 

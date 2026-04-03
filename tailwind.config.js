@@ -14,7 +14,17 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans:    ['Inter', ...defaultTheme.fontFamily.sans],
+                outfit:  ['Outfit', ...defaultTheme.fontFamily.sans],
+                heading: ['Outfit', ...defaultTheme.fontFamily.sans],
+            },
+            keyframes: {
+                'fade-in':  { from: { opacity: '0' }, to: { opacity: '1' } },
+                'slide-up': { from: { opacity: '0', transform: 'translateY(8px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+            },
+            animation: {
+                'fade-in':  'fade-in 200ms ease',
+                'slide-up': 'slide-up 250ms ease',
             },
         },
     },

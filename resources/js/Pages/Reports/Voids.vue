@@ -14,59 +14,64 @@ function applyFilter() {
 
 <template>
     <AppLayout>
-        <div class="space-y-4">
-            <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-bold text-gray-900">Void Log</h1>
-                <div class="flex gap-2">
-                    <Link :href="route('admin.reports.sales')" class="text-sm text-gray-500 hover:underline">← Sales</Link>
-                    <Link :href="route('admin.reports.audit')" class="text-sm text-gray-500 hover:underline">Audit Trail →</Link>
+        <div class="space-y-6 max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h1 class="text-3xl font-black text-[var(--text-strong)]">Void Log</h1>
+                <div class="flex gap-2 text-xs">
+                    <Link :href="route('admin.reports.sales')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">← Sales</Link>
+                    <Link :href="route('admin.reports.audit')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">Audit Trail →</Link>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-center gap-3 flex-wrap">
-                <input v-model="filterForm.from" type="date" class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm" />
-                <span class="text-gray-400 text-sm">to</span>
-                <input v-model="filterForm.to" type="date" class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm" />
-                <button @click="applyFilter" class="px-4 py-1.5 bg-amber-500 text-white rounded-lg text-sm hover:bg-amber-600">Apply</button>
+            <!-- Date filter -->
+            <div class="glass-card px-5 py-4 flex items-center gap-3 flex-wrap">
+                <input v-model="filterForm.from" type="date" class="input-premium py-1.5 text-sm" />
+                <span class="text-[var(--text-muted)] text-xs font-bold uppercase">to</span>
+                <input v-model="filterForm.to" type="date" class="input-premium py-1.5 text-sm" />
+                <button @click="applyFilter" class="btn-primary px-4 py-2 text-xs font-bold uppercase tracking-widest">Apply</button>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                <!-- By User (theft proxy) -->
-                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <div class="px-4 py-3 border-b border-gray-100 font-semibold text-gray-800 text-sm">Voids by Staff</div>
-                    <div class="divide-y divide-gray-50">
-                        <div v-for="u in byUser" :key="u.name" class="px-4 py-2.5 flex items-center justify-between text-sm">
-                            <span class="text-gray-900">{{ u.name }}</span>
-                            <span class="font-bold" :class="u.void_count > 5 ? 'text-red-600' : 'text-gray-700'">{{ u.void_count }}</span>
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- By User -->
+                <div class="glass-card overflow-hidden">
+                    <div class="px-5 py-4 border-b border-[var(--border)] bg-[var(--bg-surface)]">
+                        <h2 class="text-xs font-black uppercase tracking-widest text-[var(--text-strong)]">Voids by Staff</h2>
+                    </div>
+                    <div class="divide-y divide-[var(--border)]">
+                        <div v-for="u in byUser" :key="u.name" class="px-5 py-3 flex items-center justify-between hover:bg-[var(--bg-surface)] transition-colors">
+                            <span class="text-sm font-bold text-[var(--text-strong)]">{{ u.name }}</span>
+                            <span class="font-black font-mono text-sm" :class="u.void_count > 5 ? 'text-[var(--danger)]' : 'text-[var(--text-base)]'">{{ u.void_count }}</span>
                         </div>
+                        <div v-if="!byUser?.length" class="px-5 py-6 text-center text-sm text-[var(--text-muted)] italic">No data</div>
                     </div>
                 </div>
 
                 <!-- Void records -->
-                <div class="lg:col-span-3 bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="lg:col-span-3 glass-card overflow-hidden">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-50 border-b border-gray-200">
-                            <tr>
-                                <th class="text-left px-4 py-2 font-medium text-gray-600">Item</th>
-                                <th class="text-left px-4 py-2 font-medium text-gray-600">Table</th>
-                                <th class="text-left px-4 py-2 font-medium text-gray-600">Reason</th>
-                                <th class="text-left px-4 py-2 font-medium text-gray-600">By</th>
-                                <th class="text-left px-4 py-2 font-medium text-gray-600">Time</th>
+                        <thead>
+                            <tr class="bg-[var(--bg-surface)] text-[var(--text-muted)] text-[10px] font-black uppercase tracking-widest border-b border-[var(--border)]">
+                                <th class="text-left px-5 py-3">Item</th>
+                                <th class="text-left px-5 py-3">Table</th>
+                                <th class="text-left px-5 py-3">Reason</th>
+                                <th class="text-left px-5 py-3">By</th>
+                                <th class="text-left px-5 py-3">Time</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-50">
-                            <tr v-for="v in voids?.data" :key="v.id">
-                                <td class="px-4 py-2.5">
-                                    <div class="font-medium text-gray-900">{{ v.order_item?.menu_item?.name }}</div>
-                                    <div class="text-xs text-gray-400">×{{ v.order_item?.quantity }}</div>
+                        <tbody class="divide-y divide-[var(--border)]">
+                            <tr v-for="v in voids?.data" :key="v.id" class="hover:bg-[var(--bg-surface)] transition-colors">
+                                <td class="px-5 py-3">
+                                    <div class="font-bold text-[var(--text-strong)]">{{ v.order_item?.menu_item?.name }}</div>
+                                    <div class="text-[10px] text-[var(--text-muted)] font-bold">×{{ v.order_item?.quantity }}</div>
                                 </td>
-                                <td class="px-4 py-2.5 text-gray-600">T{{ v.order_item?.order?.restaurant_table?.number }}</td>
-                                <td class="px-4 py-2.5 text-red-700">{{ v.reason }}</td>
-                                <td class="px-4 py-2.5 text-gray-600">{{ v.user?.name }}</td>
-                                <td class="px-4 py-2.5 text-xs text-gray-400">{{ new Date(v.created_at).toLocaleString() }}</td>
+                                <td class="px-5 py-3 font-mono text-[var(--text-base)]">T{{ v.order_item?.order?.restaurant_table?.number }}</td>
+                                <td class="px-5 py-3 text-[var(--danger)] font-medium">{{ v.reason }}</td>
+                                <td class="px-5 py-3 text-[var(--text-base)]">{{ v.user?.name }}</td>
+                                <td class="px-5 py-3 text-[10px] text-[var(--text-muted)] font-mono">{{ new Date(v.created_at).toLocaleString() }}</td>
                             </tr>
                             <tr v-if="!voids?.data?.length">
-                                <td colspan="5" class="px-4 py-6 text-center text-sm text-gray-400">No voids in this period</td>
+                                <td colspan="5" class="px-5 py-10 text-center text-[var(--text-muted)] italic text-sm">No voids in this period</td>
                             </tr>
                         </tbody>
                     </table>

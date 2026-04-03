@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Ingredient;
 use App\Models\Order;
+use App\Models\StockAdjustment;
+use App\Models\Stocktake;
 use App\Models\VoidLog;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -47,17 +49,26 @@ class DashboardController extends Controller
 
         $lowStockIngredients = Ingredient::lowStock()->take(5)->get();
 
+        $pendingStocktakes = Stocktake::where('status', 'draft')->count();
+
+        $recentAdjustments = StockAdjustment::with('ingredient:id,name', 'user:id,name')
+            ->latest()
+            ->take(5)
+            ->get();
+
         return Inertia::render('Dashboard', [
             'stats' => [
-                'today_revenue' => $todayRevenue,
-                'today_orders'  => $todayOrders,
-                'active_orders' => $activeOrders,
-                'low_stock'     => $lowStockCount,
-                'today_voids'   => $todayVoids,
+                'today_revenue'    => $todayRevenue,
+                'today_orders'     => $todayOrders,
+                'active_orders'    => $activeOrders,
+                'low_stock'        => $lowStockCount,
+                'today_voids'      => $todayVoids,
+                'pending_audits'   => $pendingStocktakes,
             ],
             'recentOrders'        => $recentOrders,
             'topItems'            => $topItems,
             'lowStockIngredients' => $lowStockIngredients,
+            'recentAdjustments'   => $recentAdjustments,
         ]);
     }
 }

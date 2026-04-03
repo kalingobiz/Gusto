@@ -25,4 +25,8 @@ class StockDeduction extends Model
     {
         return $this->belongsTo(Ingredient::class);
     }
+    public function stockMovements()
+    {
+        return $this->morphMany(StockMovement::class, 'source');
+    }
 }
