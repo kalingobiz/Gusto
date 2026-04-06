@@ -141,7 +141,7 @@ const isActive = (href) => {
                     @click="toggleTheme" 
                     class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-white/5 border border-white/5 text-[var(--text-strong)] hover:border-orange-500/30 hover:bg-orange-500/5 btn-haptic transition-all duration-300 group"
                 >
-                    <span class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] group-hover:text-[var(--text-strong)]">{{ isDark ? 'System Night' : 'System Day' }}</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] group-hover:text-[var(--text-strong)]">{{ isDark ? __('System Night') : __('System Day') }}</span>
                     <span class="text-xl transition-transform duration-500 group-hover:rotate-12">{{ isDark ? '🌙' : '☀️' }}</span>
                 </button>
 
