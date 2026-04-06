@@ -67,15 +67,15 @@ function markClean(table) {
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 class="text-3xl font-black italic tracking-tight">Active Floor Map</h1>
-                    <p class="text-[var(--text-muted)] text-sm">Real-time table status and order management grid.</p>
+                    <h1 class="text-3xl font-black italic tracking-tight">{{ __('Active Floor Map') }}</h1>
+                    <p class="text-[var(--text-muted)] text-sm">{{ __('Real-time table status and order management grid.') }}</p>
                 </div>
                 
                 <!-- Status Legend -->
                 <div class="flex flex-wrap items-center gap-4 bg-[var(--bg-card)] px-5 py-3 rounded-2xl border border-[var(--border)] shadow-sm">
                     <div v-for="(color, s) in statusLabel" :key="s" class="flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full ring-4 ring-opacity-20" :class="[statusDot[s], s === 'occupied' ? 'animate-pulse ring-amber-500' : 'ring-transparent']"></span>
-                        <span class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ s }}</span>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __(s) }}</span>
                     </div>
                 </div>
             </div>
@@ -91,7 +91,7 @@ function markClean(table) {
                     <!-- Table ID & Capacity -->
                     <div class="flex items-start justify-between mb-4">
                         <div>
-                            <span class="text-[10px] font-black uppercase tracking-tighter block mb-1 opacity-50">SECTION A</span>
+                            <span class="text-[10px] font-black uppercase tracking-tighter block mb-1 opacity-50">{{ __('SECTION') }} A</span>
                             <span class="text-2xl font-black italic">{{ table.number }}</span>
                         </div>
                         <div class="text-right">
@@ -103,9 +103,9 @@ function markClean(table) {
                     <!-- Occupied State Info -->
                     <div v-if="table.status === 'occupied'" class="mb-4 space-y-1.5">
                         <div v-if="getActiveOrder(table)" class="bg-[var(--bg-main)]/50 p-2 rounded-xl border border-[var(--border)]">
-                            <div class="text-[10px] font-black text-[var(--brand)] uppercase tracking-widest mb-0.5">ORDER #{{ getActiveOrder(table).id }}</div>
+                            <div class="text-[10px] font-black text-[var(--brand)] uppercase tracking-widest mb-0.5">{{ __('ORDER') }} #{{ getActiveOrder(table).id }}</div>
                             <div class="text-[10px] font-bold text-[var(--text-strong)] truncate">
-                                {{ getActiveOrder(table).items?.length || 0 }} Items Selected
+                                {{ getActiveOrder(table).items?.length || 0 }} {{ __('Items Selected') }}
                             </div>
                         </div>
                     </div>
@@ -116,7 +116,7 @@ function markClean(table) {
                             @click="openOrder(table)" 
                             class="w-full text-[10px] font-black uppercase tracking-widest bg-[var(--brand)] text-white py-3 rounded-xl shadow-lg shadow-[var(--brand-glow)] hover:bg-[var(--brand-hover)] active:scale-95 transition-all"
                         >
-                            + NEW ORDER
+                            + {{ __('NEW ORDER') }}
                         </button>
                     </div>
 
@@ -127,13 +127,13 @@ function markClean(table) {
                             :href="route('orders.show', getActiveOrder(table).id)" 
                             class="flex-1 text-center text-[10px] font-black uppercase tracking-widest bg-[var(--bg-surface)] text-[var(--text-strong)] py-2.5 rounded-xl border border-[var(--border)] hover:bg-[var(--bg-card)] transition-all"
                         >
-                            VIEW
+                            {{ __('VIEW') }}
                         </Link>
                         <button 
                             @click="openOrder(table)" 
                             class="flex-1 text-[10px] font-black uppercase tracking-widest bg-[var(--brand)] text-white py-2.5 rounded-xl hover:bg-[var(--brand-hover)] shadow-md transition-all"
                         >
-                            + ADD
+                            + {{ __('ADD') }}
                         </button>
                     </div>
 
@@ -143,7 +143,7 @@ function markClean(table) {
                             @click="markClean(table)" 
                             class="w-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 py-3 rounded-xl hover:bg-emerald-500 hover:text-white transition-all"
                         >
-                            CLEARED
+                            {{ __('CLEARED') }}
                         </button>
                     </div>
                     

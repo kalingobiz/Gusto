@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Ingredient;
 use App\Models\Order;
 use App\Models\OrderItemLog;
 use App\Models\VoidLog;
@@ -131,6 +132,84 @@ class ReportController extends Controller
             'from' => $from->toDateString(),
             'to'   => $to->toDateString(),
             'logs' => $logs,
+        ]);
+    }
+
+    public function stock()
+    {
+        $ingredients = Ingredient::orderBy('name')->get();
+        $lowCount      = $ingredients->filter(fn ($i) => $i->current_stock > 0 && $i->current_stock <= $i->low_stock_threshold)->count();
+        $criticalCount = $ingredients->filter(fn ($i) => $i->current_stock <= 0)->count();
+
+        return Inertia::render('Reports/Stock', [
+            'ingredients'   => $ingredients,
+            'lowCount'      => $lowCount,
+            'criticalCount' => $criticalCount,
+        ]);
+    }
+
+    public function itemPerformance(Request $request)
+    {
+        $from = Carbon::parse($request->get('from', today()->startOfMonth()));
+        $to   = Carbon::parse($request->get('to', today()->endOfDay()));
+
+        $items = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->join('menu_items', 'menu_items.id', '=', 'order_items.menu_item_id')
+            ->join('categories', 'categories.id', '=', 'menu_items.category_id')
+            ->where('orders.status', 'paid')
+            ->where('order_items.kitchen_status', '!=', 'voided')
+            ->whereBetween('orders.created_at', [$from, $to])
+            ->select(
+                'menu_items.id',
+                'menu_items.name',
+                'categories.name as category',
+                DB::raw('SUM(order_items.quantity) as total_qty'),
+                DB::raw('SUM(order_items.line_total) as total_revenue')
+            )
+            ->groupBy('menu_items.id', 'menu_items.name', 'categories.name')
+            ->orderByDesc('total_revenue')
+            ->get();
+
+        $totalRevenue = $items->sum('total_revenue');
+
+        return Inertia::render('Reports/ItemPerformance', [
+            'from'         => $from->toDateString(),
+            'to'           => $to->toDateString(),
+            'items'        => $items,
+            'totalRevenue' => $totalRevenue,
+        ]);
+    }
+
+    public function hourlySales(Request $request)
+    {
+        $from = Carbon::parse($request->get('from', today()->startOfMonth()));
+        $to   = Carbon::parse($request->get('to', today()->endOfDay()));
+
+        $driver = DB::getDriverName();
+        $hourExpr = $driver === 'sqlite'
+            ? "CAST(strftime('%H', created_at) AS INTEGER)"
+            : 'HOUR(created_at)';
+
+        $byHour = DB::table('orders')
+            ->where('status', 'paid')
+            ->whereBetween('created_at', [$from, $to])
+            ->selectRaw("$hourExpr as hour, COUNT(*) as orders, SUM(total) as revenue")
+            ->groupBy(DB::raw($hourExpr))
+            ->orderBy('hour')
+            ->get();
+
+        $peakHour     = $byHour->sortByDesc('revenue')->first();
+        $totalOrders  = $byHour->sum('orders');
+        $totalRevenue = $byHour->sum('revenue');
+
+        return Inertia::render('Reports/HourlySales', [
+            'from'         => $from->toDateString(),
+            'to'           => $to->toDateString(),
+            'byHour'       => $byHour->values(),
+            'peakHour'     => $peakHour,
+            'totalOrders'  => $totalOrders,
+            'totalRevenue' => $totalRevenue,
         ]);
     }
 }

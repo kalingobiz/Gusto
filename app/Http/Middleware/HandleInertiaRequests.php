@@ -30,6 +30,15 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        app()->setLocale(session('locale', 'en'));
+
+        $locale = app()->getLocale();
+        $translations = [];
+        $path = base_path("lang/{$locale}.json");
+        if (file_exists($path)) {
+            $translations = json_decode(file_get_contents($path), true) ?? [];
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
@@ -48,6 +57,8 @@ class HandleInertiaRequests extends Middleware
             'lowStockCount' => fn () => $request->user() && $request->user()->role === 'admin'
                 ? Ingredient::lowStock()->count()
                 : 0,
+            'locale' => $locale,
+            'translations' => $translations,
         ];
     }
 }

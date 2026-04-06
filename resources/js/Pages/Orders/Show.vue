@@ -18,7 +18,9 @@ watch(() => props.order, (updated) => {
 const kitchenStatusConfig = {
     pending:     { label: 'Pending',     cls: 'bg-[var(--bg-surface)] text-[var(--text-muted)] border-[var(--border)]' },
     in_progress: { label: 'Cooking',     cls: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
-    done:        { label: 'Done',        cls: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
+    cooking:     { label: 'Cooking',     cls: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+    ready:       { label: 'Ready',       cls: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+    done:        { label: 'Delivered',   cls: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
     voided:      { label: 'Voided',      cls: 'bg-[var(--danger)]/10 text-[var(--danger)] border-[var(--danger)]/20' },
 };
 
@@ -172,7 +174,7 @@ const progressPct  = computed(() => {
 
                         <!-- Line total -->
                         <div class="text-sm font-black text-[var(--text-strong)] w-20 text-right">
-                            ${{ currency(item.line_total) }}
+                            {{ currency(item.line_total) }} Birr
                         </div>
 
                         <!-- Kitchen badge -->
@@ -218,7 +220,7 @@ const progressPct  = computed(() => {
                                 <div class="text-sm font-bold text-[var(--text-muted)] line-through truncate">{{ item.menu_item?.name }}</div>
                                 <div v-if="item.void_log" class="text-[10px] text-[var(--danger)] font-bold">{{ item.void_log.reason }}</div>
                             </div>
-                            <div class="text-sm text-[var(--text-muted)] line-through">${{ currency(item.line_total) }}</div>
+                            <div class="text-sm text-[var(--text-muted)] line-through">{{ currency(item.line_total) }} Birr</div>
                         </div>
                     </div>
                 </details>
@@ -226,7 +228,7 @@ const progressPct  = computed(() => {
                 <!-- Total row -->
                 <div class="px-6 py-5 bg-[var(--bg-surface)] border-t border-[var(--border)] flex items-center justify-between">
                     <span class="text-sm font-black uppercase tracking-widest text-[var(--text-muted)]">Total</span>
-                    <span class="text-2xl font-heading font-black text-[var(--text-strong)]">${{ currency(order.total) }}</span>
+                    <span class="text-2xl font-heading font-black text-[var(--text-strong)]">{{ currency(order.total) }} Birr</span>
                 </div>
             </div>
 
@@ -239,7 +241,7 @@ const progressPct  = computed(() => {
                     <div class="text-sm font-black text-emerald-500 uppercase tracking-widest mb-0.5">Payment Confirmed</div>
                     <div class="text-[var(--text-muted)] text-sm font-medium">
                         {{ order.payment.method === 'cash' ? 'Cash' : 'Bank Transfer' }} ·
-                        ${{ currency(order.payment.amount) }}
+                        {{ currency(order.payment.amount) }} Birr
                         <span v-if="order.payment.reference"> · Ref: {{ order.payment.reference }}</span>
                     </div>
                 </div>
@@ -284,7 +286,7 @@ const progressPct  = computed(() => {
                         <div class="px-6 py-5 border-b border-[var(--border)] bg-[var(--bg-surface)] flex items-center justify-between">
                             <div>
                                 <h2 class="text-base font-heading font-black text-[var(--text-strong)]">Record Payment</h2>
-                                <p class="text-xs text-[var(--text-muted)] font-medium mt-0.5">Order #{{ order.id }} · ${{ currency(order.total) }}</p>
+                                <p class="text-xs text-[var(--text-muted)] font-medium mt-0.5">Order #{{ order.id }} · {{ currency(order.total) }} Birr</p>
                             </div>
                             <button @click="showPayment = false" class="btn-icon w-9 h-9">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>

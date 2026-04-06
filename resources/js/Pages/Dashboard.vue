@@ -31,12 +31,12 @@ const statusColors = {
             <!-- Welcome Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-4xl font-heading font-black tracking-tight text-[var(--text-strong)]">Executive Overview</h1>
-                    <p class="text-[var(--text-muted)] font-medium">Real-time performance metrics and operational pulse.</p>
+                    <h1 class="text-4xl font-heading font-black tracking-tight text-[var(--text-strong)]">{{ __('Executive Overview') }}</h1>
+                    <p class="text-[var(--text-muted)] font-medium">{{ __('Real-time performance metrics and operational pulse.') }}</p>
                 </div>
                 <div class="flex items-center gap-2 px-4 py-2 bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] shadow-sm">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-[var(--text-strong)]">System Live</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-[var(--text-strong)]">{{ __('System Live') }}</span>
                 </div>
             </div>
 
@@ -45,11 +45,11 @@ const statusColors = {
                 <div class="flex items-center gap-3">
                     <span class="w-3 h-3 rounded-full bg-[var(--danger)] animate-pulse flex-shrink-0"></span>
                     <p class="text-sm font-bold text-[var(--danger)]">
-                        {{ lowStockIngredients.length }} ingredient{{ lowStockIngredients.length > 1 ? 's' : '' }} below reorder level — immediate restock recommended.
+                        {{ lowStockIngredients.length }} {{ __('ingredients below reorder level — immediate restock recommended.') }}
                     </p>
                 </div>
                 <Link :href="route('admin.ingredients.index')" class="btn-primary px-4 py-2 text-xs flex-shrink-0">
-                    Review Stock
+                    {{ __('Review Stock') }}
                 </Link>
             </div>
 
@@ -62,7 +62,7 @@ const statusColors = {
                             <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
                     </div>
-                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Today Revenue</div>
+                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">{{ __('Today Revenue') }}</div>
                     <div class="text-2xl font-heading font-black text-[var(--text-strong)] truncate">${{ currency(stats?.today_revenue) }}</div>
                 </div>
 
@@ -73,7 +73,7 @@ const statusColors = {
                             <svg class="w-4 h-4 text-[var(--brand)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                         </div>
                     </div>
-                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Total Orders</div>
+                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">{{ __('Total Orders') }}</div>
                     <div class="text-2xl font-heading font-black text-[var(--text-strong)]">{{ stats?.today_orders }}</div>
                 </div>
 
@@ -84,7 +84,7 @@ const statusColors = {
                             <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                         </div>
                     </div>
-                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Active Floor</div>
+                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">{{ __('Active Floor') }}</div>
                     <div class="text-2xl font-heading font-black text-blue-500">{{ stats?.active_orders }}</div>
                 </div>
 
@@ -95,7 +95,7 @@ const statusColors = {
                             <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                         </div>
                     </div>
-                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Critical Stock</div>
+                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">{{ __('Critical Stock') }}</div>
                     <div class="text-2xl font-heading font-black" :class="stats?.low_stock > 0 ? 'text-red-500 animate-pulse' : 'text-[var(--text-strong)]'">
                         {{ stats?.low_stock }}
                     </div>
@@ -108,7 +108,7 @@ const statusColors = {
                             <svg class="w-4 h-4 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                         </div>
                     </div>
-                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Today Voids</div>
+                    <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">{{ __('Today Voids') }}</div>
                     <div class="text-2xl font-heading font-black text-[var(--text-strong)]">{{ stats?.today_voids }}</div>
                 </div>
 

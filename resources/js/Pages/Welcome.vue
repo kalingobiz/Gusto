@@ -18,7 +18,7 @@ defineProps({
         <!-- Navigation -->
         <nav class="relative z-10 flex justify-between items-center px-8 py-8 max-w-7xl mx-auto">
             <div class="flex items-center gap-3">
-                <span class="text-4xl">🍴</span>
+                <img src="/mylogo.png" alt="Gusto Logo" class="h-12 w-auto rounded-xl shadow-2xl" />
                 <span class="text-3xl font-heading font-black tracking-tighter text-[var(--text-strong)]">Gusto<span class="text-[var(--brand)]">Prime</span></span>
             </div>
             

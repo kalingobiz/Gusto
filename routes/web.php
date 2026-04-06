@@ -20,6 +20,14 @@ Route::get('/test-kds', function () {
     return inertia('TestKDS');
 });
 
+// ─── Localization ────────────────────────────────────────────────────────────
+Route::get('/language/{locale}', function ($locale) {
+    if (in_array($locale, ['en', 'am', 'om'])) {
+        session()->put('locale', $locale);
+    }
+    return redirect()->back();
+})->name('language.switch');
+
 // ─── Authenticated ───────────────────────────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
 
@@ -117,6 +125,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reports/bom-variance', [Admin\ReportController::class, 'bomVariance'])->name('reports.bom-variance');
         Route::get('/reports/voids', [Admin\ReportController::class, 'voids'])->name('reports.voids');
         Route::get('/reports/audit', [Admin\ReportController::class, 'audit'])->name('reports.audit');
+        Route::get('/reports/stock', [Admin\ReportController::class, 'stock'])->name('reports.stock');
+        Route::get('/reports/item-performance', [Admin\ReportController::class, 'itemPerformance'])->name('reports.item-performance');
+        Route::get('/reports/hourly-sales', [Admin\ReportController::class, 'hourlySales'])->name('reports.hourly-sales');
     });
 });
 

@@ -18,7 +18,7 @@ class DisplayController extends Controller
         $activeOrders = Order::whereIn('status', ['confirmed', 'in_progress', 'ready'])
             ->with([
                 'restaurantTable:id,number',
-                'items' => fn ($q) => $q->whereIn('kitchen_status', ['pending', 'in_progress'])
+                'items' => fn ($q) => $q->whereIn('kitchen_status', ['pending', 'cooking', 'ready'])
                     ->with('menuItem:id,name'),
             ])
             ->latest()
@@ -33,24 +33,24 @@ class DisplayController extends Controller
     public function updateStatus(Request $request, OrderItem $item)
     {
         $data = $request->validate([
-            'kitchen_status' => 'required|in:in_progress,done',
+            'kitchen_status' => 'required|in:cooking,ready,done',
         ]);
 
-        if ($data['kitchen_status'] === 'done') {
-            $this->orders->markItemDone($item, auth()->id());
-        } else {
-            $this->orders->markItemInProgress($item, auth()->id());
-        }
+        match ($data['kitchen_status']) {
+            'cooking' => $this->orders->markItemCooking($item, auth()->id()),
+            'ready'   => $this->orders->markItemReady($item, auth()->id()),
+            'done'    => $this->orders->markItemDone($item, auth()->id()),
+        };
 
         return response()->json(['success' => true]);
     }
 
     public function pending()
     {
-        $orders = Order::whereIn('status', ['confirmed', 'in_progress'])
+        $orders = Order::whereIn('status', ['confirmed', 'in_progress', 'ready'])
             ->with([
                 'restaurantTable:id,number',
-                'items' => fn ($q) => $q->whereIn('kitchen_status', ['pending', 'in_progress'])
+                'items' => fn ($q) => $q->whereIn('kitchen_status', ['pending', 'cooking', 'ready'])
                     ->with('menuItem:id,name'),
             ])
             ->latest()

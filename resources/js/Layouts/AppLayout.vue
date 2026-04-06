@@ -6,7 +6,7 @@ const page = usePage();
 const user = computed(() => page.props.auth.user);
 const flash = computed(() => page.props.flash);
 const sidebarOpen = ref(false);
-const isDark = ref(localStorage.getItem('theme') === 'dark');
+const isDark = ref(localStorage.getItem('theme') !== 'light'); // Default to dark for 'Prime' feel
 
 // Live clock
 const clock = ref('');
@@ -32,11 +32,13 @@ const toggleTheme = () => {
 };
 
 // Initialize theme on mount
-if (isDark.value) {
-    document.documentElement.classList.add('dark');
-} else {
-    document.documentElement.classList.remove('dark');
-}
+onMounted(() => {
+    if (isDark.value) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+});
 
 onUnmounted(() => clearInterval(clockTimer));
 
@@ -44,7 +46,6 @@ const navItems = computed(() => {
     const role = user.value?.role;
     const items = [];
 
-    // Using explicit SVG paths for consistency
     const icons = {
         floor: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />',
         kitchen: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" />',
@@ -89,131 +90,152 @@ const isActive = (href) => {
 </script>
 
 <template>
-    <div class="min-h-screen flex text-[var(--text-base)]">
+    <div class="min-h-screen flex text-[var(--text-base)] font-sans relative overflow-hidden bg-[var(--bg-main)]">
+        <!-- Persistent Ambient Glows -->
+        <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-[var(--brand)]/5 blur-[120px] rounded-full pointer-events-none"></div>
+        <div class="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-blue-500/5 blur-[120px] rounded-full pointer-events-none"></div>
+
         <!-- Sidebar -->
         <aside
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            class="fixed inset-y-0 left-0 z-50 w-64 bg-[var(--bg-card)] border-r border-[var(--border)] transition-transform duration-300 lg:relative lg:translate-x-0 lg:flex lg:flex-col shadow-xl lg:shadow-none"
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-[var(--bg-card)]/40 backdrop-blur-2xl border-r border-[var(--border)] transition-all duration-500 lg:relative lg:translate-x-0 lg:flex lg:flex-col shadow-[20px_0_40px_rgba(0,0,0,0.1)]"
         >
-            <div class="flex items-center justify-between px-6 py-6">
-                <div class="flex items-center gap-3">
-                    <span class="text-2xl">🍴</span>
-                    <span class="text-xl font-heading font-black tracking-tight text-[var(--text-strong)]">Gusto</span>
+            <div class="flex items-center justify-between px-7 py-8">
+                <div class="flex items-center gap-3 group">
+                    <div class="p-2 rounded-xl bg-white/5 border border-white/10 shadow-inner group-hover:border-orange-500/50 transition-colors">
+                        <img src="/mylogo.png" alt="Gusto Logo" class="h-8 w-auto drop-shadow-lg" />
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xl font-heading font-black tracking-tight text-[var(--text-strong)] leading-none">Gusto</span>
+                        <span class="text-[10px] font-black tracking-[0.2em] uppercase text-orange-500 opacity-80 mt-1">Prime</span>
+                    </div>
                 </div>
-                <button @click="sidebarOpen = false" class="lg:hidden text-[var(--text-muted)] hover:text-[var(--text-strong)]">
+                <button @click="sidebarOpen = false" class="lg:hidden text-[var(--text-muted)] hover:text-[var(--text-strong)] btn-haptic p-1">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
-            <nav class="flex-1 overflow-y-auto py-4 px-4 space-y-1">
+            <nav class="flex-1 overflow-y-auto py-4 px-4 space-y-1.5 custom-scrollbar">
                 <Link
                     v-for="item in navItems"
                     :key="item.label"
                     :href="item.href"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group relative overflow-hidden"
+                    class="flex items-center gap-3.5 px-5 py-3 rounded-2xl text-sm font-bold transition-all duration-300 group relative overflow-hidden"
                     :class="isActive(item.href) 
-                        ? 'bg-[var(--brand)] text-white shadow-lg shadow-[var(--brand-glow)]' 
-                        : 'text-[var(--text-muted)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-strong)]'"
+                        ? 'bg-gradient-to-r from-[var(--brand)] to-orange-400 text-white shadow-xl shadow-[var(--brand-glow)] active-nav-glow' 
+                        : 'text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--text-strong)] border border-transparent hover:border-white/10'"
                 >
                     <div 
-                        class="w-5 h-5 flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-                        v-html="`<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'>${item.icon}</svg>`"
+                        class="w-5 h-5 flex items-center justify-center transition-all duration-500 group-hover:scale-125"
+                        :class="isActive(item.href) ? 'scale-110' : ''"
+                        v-html="`<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor' stroke-width='2.5'>${item.icon}</svg>`"
                     ></div>
-                    <span class="relative z-10">{{ item.label }}</span>
-                    <div v-if="isActive(item.href)" class="absolute right-0 top-0 bottom-0 w-1 bg-white/20"></div>
+                    <span class="relative z-10 tracking-wide">{{ __(item.label) }}</span>
+                    <div v-if="isActive(item.href)" class="absolute inset-0 bg-white opacity-10 animate-pulse"></div>
                 </Link>
             </nav>
 
-            <div class="p-4 space-y-4">
+            <div class="p-4 mt-auto space-y-4 border-t border-[var(--border)]/50">
                 <!-- Theme Toggle -->
                 <button 
                     @click="toggleTheme" 
-                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-strong)] hover:border-[var(--brand)] hover:bg-[var(--brand-glow)] btn-haptic transition-all"
+                    class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-white/5 border border-white/5 text-[var(--text-strong)] hover:border-orange-500/30 hover:bg-orange-500/5 btn-haptic transition-all duration-300 group"
                 >
-                    <span class="text-sm font-semibold">{{ isDark ? 'Night Mode' : 'Day Mode' }}</span>
-                    <span class="text-lg">{{ isDark ? '🌙' : '☀️' }}</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] group-hover:text-[var(--text-strong)]">{{ isDark ? 'System Night' : 'System Day' }}</span>
+                    <span class="text-xl transition-transform duration-500 group-hover:rotate-12">{{ isDark ? '🌙' : '☀️' }}</span>
                 </button>
 
-                <div class="flex items-center gap-3 px-2">
-                    <div class="w-10 h-10 rounded-full bg-[var(--brand)] flex items-center justify-center text-white font-bold">
+                <div class="p-1 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] flex gap-1 mb-2">
+                    <Link :href="route('language.switch', 'en')" class="flex-1 py-2 text-center rounded-lg text-[10px] font-black uppercase tracking-widest transition-all" :class="$page.props.locale === 'en' ? 'bg-[var(--brand)] text-white shadow-md' : 'text-[var(--text-muted)] hover:bg-[var(--bg-card)]'">EN</Link>
+                    <Link :href="route('language.switch', 'am')" class="flex-1 py-2 text-center rounded-lg text-[10px] font-black uppercase tracking-widest transition-all" :class="$page.props.locale === 'am' ? 'bg-[var(--brand)] text-white shadow-md' : 'text-[var(--text-muted)] hover:bg-[var(--bg-card)]'">አማ</Link>
+                    <Link :href="route('language.switch', 'om')" class="flex-1 py-2 text-center rounded-lg text-[10px] font-black uppercase tracking-widest transition-all" :class="$page.props.locale === 'om' ? 'bg-[var(--brand)] text-white shadow-md' : 'text-[var(--text-muted)] hover:bg-[var(--bg-card)]'">OM</Link>
+                </div>
+
+                <div class="flex items-center gap-3.5 px-3 py-3 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-[var(--brand)] to-orange-300 flex items-center justify-center text-white font-black text-lg shadow-lg">
                         {{ user?.name?.charAt(0) }}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="text-sm font-bold text-[var(--text-strong)] truncate">{{ user?.name }}</div>
-                        <div class="text-xs text-[var(--text-muted)] capitalize">{{ user?.role }}</div>
+                        <div class="text-sm font-black text-[var(--text-strong)] truncate tracking-wide">{{ user?.name }}</div>
+                        <div class="text-[10px] text-orange-500 font-bold uppercase tracking-widest">{{ __(user?.role) }} {{ __('mode') }}</div>
                     </div>
                 </div>
+                
                 <Link
                     :href="route('logout')"
                     method="post"
                     as="button"
-                    class="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-red-500/20 text-[var(--danger)] text-sm font-bold hover:bg-red-500/10 btn-haptic transition-all duration-300 group"
+                    class="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-2xl border border-red-500/10 text-red-500/60 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 btn-haptic transition-all duration-500 group"
                 >
-                    <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    Sign out
+                    <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    {{ __('Logout') }}
                 </Link>
             </div>
         </aside>
 
         <!-- Main content -->
-        <div class="flex-1 flex flex-col min-w-0 bg-[var(--bg-main)]">
+        <div class="flex-1 flex flex-col min-w-0 relative z-10 transition-all duration-500">
             <!-- Top bar -->
-            <header class="bg-[var(--bg-card)]/80 backdrop-blur-xl border-b border-[var(--border)] px-6 py-3.5 flex items-center justify-between sticky top-0 z-40 shadow-sm">
-                <div class="flex items-center gap-4">
-                    <button @click="sidebarOpen = true" class="lg:hidden btn-icon">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <header class="bg-[var(--bg-card)]/40 backdrop-blur-2xl border-b border-[var(--border)] px-8 py-5 flex items-center justify-between sticky top-0 z-40">
+                <div class="flex items-center gap-6">
+                    <button @click="sidebarOpen = true" class="lg:hidden btn-icon w-12 h-12 rounded-xl !bg-white/5 hover:!bg-orange-500/10 hover:!border-orange-500/30">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
                     <!-- Dynamic page title slot -->
                     <div class="hidden lg:block">
                         <slot name="header">
-                            <span class="text-lg font-heading font-bold text-[var(--text-strong)]">Gusto Prime</span>
+                            <h2 class="text-2xl font-heading font-black text-[var(--text-strong)] tracking-tight">{{ __('System') }} <span class="text-orange-500">{{ __('Overview') }}</span></h2>
                         </slot>
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-4">
                     <!-- Low stock alert -->
                     <Link
                         v-if="page.props.lowStockCount > 0"
                         :href="route('admin.ingredients.index')"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--danger)]/10 border border-[var(--danger)]/20 text-[var(--danger)] text-xs font-black animate-pulse"
+                        class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-[0.15em] animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.15)]"
                     >
-                        <span class="w-1.5 h-1.5 rounded-full bg-[var(--danger)] flex-shrink-0"></span>
-                        {{ page.props.lowStockCount }} Low Stock
+                        <span class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
+                        {{ page.props.lowStockCount }} {{ __('Shortages') }}
                     </Link>
 
                     <!-- Live indicator -->
-                    <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-black">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Live
+                    <div class="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-[0.15em] shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                        {{ __('Active Terminal') }}
                     </div>
 
                     <!-- Clock -->
-                    <div class="hidden md:flex items-center px-3 py-1.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] text-xs font-black text-[var(--text-strong)] font-mono tracking-wider">
+                    <div class="hidden md:flex items-center px-5 py-2.5 rounded-2xl bg-white/5 border border-white/5 text-xs font-black text-[var(--text-strong)] font-mono tracking-[0.2em] shadow-inner">
                         {{ clock }}
                     </div>
                 </div>
             </header>
 
             <!-- Flash messages -->
-            <div v-if="flash?.success || flash?.error" class="px-6 pt-4">
+            <div v-if="flash?.success || flash?.error" class="px-8 pt-6">
                 <div
                     v-if="flash.success"
-                    class="bg-[var(--success)]/10 border border-[var(--success)]/30 text-[var(--success)] px-4 py-3 rounded-lg text-sm font-medium"
+                    class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-6 py-4 rounded-2xl text-sm font-bold shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500"
                 >
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                     {{ flash.success }}
                 </div>
                 <div
                     v-if="flash.error"
-                    class="bg-[var(--danger)]/10 border border-[var(--danger)]/30 text-[var(--danger)] px-4 py-3 rounded-lg text-sm font-medium"
+                    class="bg-red-500/10 border border-red-500/30 text-red-400 px-6 py-4 rounded-2xl text-sm font-bold shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500"
                 >
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     {{ flash.error }}
                 </div>
             </div>
 
             <!-- Page content -->
-            <main class="flex-1 p-6">
-                <slot />
+            <main class="flex-1 p-8 overflow-y-auto custom-scrollbar">
+                <div class="max-w-[1600px] mx-auto h-full">
+                    <slot />
+                </div>
             </main>
         </div>
 
@@ -221,7 +243,21 @@ const isActive = (href) => {
         <div
             v-if="sidebarOpen"
             @click="sidebarOpen = false"
-            class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-500"
         />
     </div>
 </template>
+
+<style>
+.active-nav-glow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+}
+
+.font-heading {
+    font-family: 'Outfit', sans-serif;
+}
+</style>

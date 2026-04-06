@@ -11,7 +11,9 @@ const props = defineProps({
 const cart             = ref([]);
 const selectedCategory = ref(props.categories?.[0]?.id);
 const notes            = ref('');
-const expandedItem     = ref(null); // for inline notes per item
+const expandedItem     = ref(null);
+// Mobile: 'menu' or 'cart'
+const mobileTab        = ref('menu');
 
 const cartTotal = computed(() =>
     cart.value.reduce((sum, item) => sum + item.unit_price * item.quantity, 0)
@@ -68,7 +70,8 @@ function placeOrder() {
     })).post(route('orders.store'), { preserveScroll: true });
 }
 
-function currency(v) { return Number(v).toFixed(2); }
+function currency(v) { return Number(v).toFixed(2) + ' Birr'; }
+function currencyRaw(v) { return Number(v).toFixed(2); }
 
 function getCartQty(menuItemId, variantId = null) {
     const key = `${menuItemId}-${variantId ?? 0}`;
@@ -78,12 +81,41 @@ function getCartQty(menuItemId, variantId = null) {
 
 <template>
     <AppLayout>
-        <div class="flex gap-0 -m-6 min-h-[calc(100vh-80px)]">
+        <!-- Mobile Tab Bar -->
+        <div class="lg:hidden flex border-b border-[var(--border)] bg-[var(--bg-card)] -mx-8 -mt-8 mb-0 px-6 sticky top-[73px] z-30">
+            <button
+                @click="mobileTab = 'menu'"
+                class="flex-1 py-3.5 text-sm font-black uppercase tracking-widest transition-all border-b-2"
+                :class="mobileTab === 'menu'
+                    ? 'text-[var(--brand)] border-[var(--brand)]'
+                    : 'text-[var(--text-muted)] border-transparent hover:text-[var(--text-strong)]'"
+            >
+                🍽️ {{ __('Menu') }}
+            </button>
+            <button
+                @click="mobileTab = 'cart'"
+                class="flex-1 py-3.5 text-sm font-black uppercase tracking-widest transition-all border-b-2 relative"
+                :class="mobileTab === 'cart'
+                    ? 'text-[var(--brand)] border-[var(--brand)]'
+                    : 'text-[var(--text-muted)] border-transparent hover:text-[var(--text-strong)]'"
+            >
+                🛒 {{ __('Cart') }}
+                <span
+                    v-if="cartCount > 0"
+                    class="absolute top-2 right-6 w-5 h-5 rounded-full bg-[var(--brand)] text-white text-[10px] font-black flex items-center justify-center"
+                >{{ cartCount }}</span>
+            </button>
+        </div>
+
+        <div class="flex gap-0 -mx-8 -mb-8 min-h-[calc(100vh-80px)]">
 
             <!-- ══════════════════════════════════════════════════ -->
             <!-- LEFT: Menu Panel                                   -->
             <!-- ══════════════════════════════════════════════════ -->
-            <div class="flex-1 flex flex-col min-w-0 border-r border-[var(--border)]">
+            <div
+                class="flex flex-col min-w-0 border-r border-[var(--border)]"
+                :class="mobileTab === 'cart' ? 'hidden lg:flex lg:flex-1' : 'flex flex-1'"
+            >
 
                 <!-- Header bar -->
                 <div class="px-6 py-5 border-b border-[var(--border)] bg-[var(--bg-card)] flex items-center justify-between flex-shrink-0">
@@ -92,17 +124,17 @@ function getCartQty(menuItemId, variantId = null) {
                             <div class="w-8 h-8 rounded-lg bg-[var(--brand)]/10 border border-[var(--brand)]/20 flex items-center justify-center">
                                 <svg class="w-4 h-4 text-[var(--brand)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                             </div>
-                            New Order
+                            {{ __('New Order') }}
                         </h1>
                         <p class="text-xs text-[var(--text-muted)] font-bold mt-0.5">
-                            Table <span class="text-[var(--brand)]">{{ table.number }}</span>
+                            {{ __('Table') }} <span class="text-[var(--brand)]">{{ table.number }}</span>
                             <span class="mx-1.5 text-[var(--border)]">·</span>
-                            {{ table.capacity }} seats
+                            {{ table.capacity }} {{ __('seats') }}
                         </p>
                     </div>
                 </div>
 
-                <!-- Category tabs – scrollable pill strip -->
+                <!-- Category tabs -->
                 <div class="px-6 py-3 border-b border-[var(--border)] bg-[var(--bg-card)] flex gap-2 overflow-x-auto flex-shrink-0"
                      style="scrollbar-width: none;">
                     <button
@@ -131,7 +163,7 @@ function getCartQty(menuItemId, variantId = null) {
                         <button
                             v-for="item in currentItems"
                             :key="item.id"
-                            @click="addItem(item)"
+                            @click="addItem(item); mobileTab = 'cart'"
                             class="relative glass-card text-left p-0 overflow-hidden btn-haptic group transition-all duration-200 hover:-translate-y-0.5"
                         >
                             <!-- Quantity badge -->
@@ -159,26 +191,25 @@ function getCartQty(menuItemId, variantId = null) {
                             <div class="p-3">
                                 <div class="font-bold text-sm text-[var(--text-strong)] leading-tight mb-1 truncate">{{ item.name }}</div>
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[var(--brand)] font-black text-sm">${{ currency(item.price) }}</span>
-                                    <!-- plus indicator -->
+                                    <span class="text-[var(--brand)] font-black text-sm">{{ currencyRaw(item.price) }} Birr</span>
                                     <div class="w-6 h-6 rounded-lg bg-[var(--brand)]/10 border border-[var(--brand)]/20 flex items-center justify-center group-hover:bg-[var(--brand)] group-hover:border-[var(--brand)] transition-all">
                                         <svg class="w-3.5 h-3.5 text-[var(--brand)] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 5v14M5 12h14"/></svg>
                                     </div>
                                 </div>
 
-                                <!-- Variants (inline, smaller buttons) -->
+                                <!-- Variants -->
                                 <div v-if="item.variants?.length" class="mt-2 pt-2 border-t border-[var(--border)] space-y-1">
                                     <button
                                         v-for="v in item.variants"
                                         :key="v.id"
-                                        @click.stop="addItem(item, v)"
+                                        @click.stop="addItem(item, v); mobileTab = 'cart'"
                                         class="w-full text-xs text-left px-2 py-1.5 rounded-lg font-bold transition-all flex items-center justify-between gap-1"
                                         :class="getCartQty(item.id, v.id) > 0
                                             ? 'bg-[var(--brand)]/10 text-[var(--brand)] border border-[var(--brand)]/20'
                                             : 'bg-[var(--bg-surface)] text-[var(--text-muted)] hover:bg-[var(--bg-main)] border border-transparent'"
                                     >
                                         <span class="truncate">{{ v.name }}</span>
-                                        <span class="flex-shrink-0 text-[10px] font-black">+${{ currency(v.price_modifier) }}</span>
+                                        <span class="flex-shrink-0 text-[10px] font-black">+{{ currencyRaw(v.price_modifier) }} Birr</span>
                                     </button>
                                 </div>
                             </div>
@@ -188,7 +219,7 @@ function getCartQty(menuItemId, variantId = null) {
                     <!-- Empty category -->
                     <div v-else class="flex flex-col items-center justify-center h-64 gap-4 text-[var(--text-muted)]">
                         <div class="w-16 h-16 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center text-3xl">🍽️</div>
-                        <p class="text-sm font-bold">No available items in this category</p>
+                        <p class="text-sm font-bold">{{ __('No available items in this category') }}</p>
                     </div>
                 </div>
             </div>
@@ -196,7 +227,10 @@ function getCartQty(menuItemId, variantId = null) {
             <!-- ══════════════════════════════════════════════════ -->
             <!-- RIGHT: Cart Panel                                  -->
             <!-- ══════════════════════════════════════════════════ -->
-            <div class="w-80 xl:w-96 flex-shrink-0 flex flex-col bg-[var(--bg-card)]">
+            <div
+                class="w-full lg:w-80 xl:w-96 flex-shrink-0 flex flex-col bg-[var(--bg-card)]"
+                :class="mobileTab === 'menu' ? 'hidden lg:flex' : 'flex'"
+            >
 
                 <!-- Cart header -->
                 <div class="px-6 py-5 border-b border-[var(--border)] flex items-center justify-between flex-shrink-0">
@@ -208,14 +242,14 @@ function getCartQty(menuItemId, variantId = null) {
                                 class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[var(--brand)] text-white text-[9px] font-black flex items-center justify-center"
                             >{{ cartCount }}</div>
                         </div>
-                        <h2 class="text-sm font-heading font-black text-[var(--text-strong)]">Order Cart</h2>
+                        <h2 class="text-sm font-heading font-black text-[var(--text-strong)]">{{ __('Order Cart') }}</h2>
                     </div>
                     <button
                         v-if="cart.length"
                         @click="cart = []"
                         class="text-[10px] font-black uppercase tracking-widest text-[var(--danger)] hover:text-white hover:bg-[var(--danger)] px-2.5 py-1 rounded-lg transition-all border border-[var(--danger)]/20"
                     >
-                        Clear
+                        {{ __('CLEAR') }}
                     </button>
                 </div>
 
@@ -236,7 +270,7 @@ function getCartQty(menuItemId, variantId = null) {
 
                                 <div class="flex-1 min-w-0">
                                     <div class="font-bold text-sm text-[var(--text-strong)] leading-tight truncate">{{ item.name }}</div>
-                                    <div class="text-xs text-[var(--text-muted)] font-medium mt-0.5">${{ currency(item.unit_price) }} each</div>
+                                    <div class="text-xs text-[var(--text-muted)] font-medium mt-0.5">{{ currencyRaw(item.unit_price) }} Birr {{ __('each') }}</div>
                                 </div>
 
                                 <!-- Delete -->
@@ -250,7 +284,6 @@ function getCartQty(menuItemId, variantId = null) {
 
                             <!-- Qty + line total row -->
                             <div class="flex items-center justify-between mt-3">
-                                <!-- Qty controls -->
                                 <div class="flex items-center gap-2 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl p-1">
                                     <button
                                         @click="removeItem(item.key)"
@@ -264,7 +297,7 @@ function getCartQty(menuItemId, variantId = null) {
                                 </div>
 
                                 <span class="text-sm font-black text-[var(--text-strong)]">
-                                    ${{ currency(item.unit_price * item.quantity) }}
+                                    {{ currencyRaw(item.unit_price * item.quantity) }} Birr
                                 </span>
                             </div>
 
@@ -274,7 +307,7 @@ function getCartQty(menuItemId, variantId = null) {
                                 class="mt-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--brand)] transition-colors flex items-center gap-1"
                             >
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-                                {{ item.notes ? 'Edit note' : '+ Add note' }}
+                                {{ item.notes ? __('Edit note') : '+ ' + __('Add note') }}
                             </button>
                             <Transition name="slide-down">
                                 <div v-if="expandedItem === item.key" class="mt-2">
@@ -294,17 +327,17 @@ function getCartQty(menuItemId, variantId = null) {
                         <div class="w-16 h-16 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center">
                             <svg class="w-8 h-8 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         </div>
-                        <p class="text-sm font-bold">Tap items to add them</p>
-                        <p class="text-xs text-center max-w-[160px]">Your order will appear here</p>
+                        <p class="text-sm font-bold">{{ __('Tap items to add them') }}</p>
+                        <p class="text-xs text-center max-w-[160px]">{{ __('Your order will appear here') }}</p>
                     </div>
                 </div>
 
-                <!-- Cart footer: notes + total + place order -->
+                <!-- Cart footer -->
                 <div class="border-t border-[var(--border)] p-5 space-y-4 flex-shrink-0">
 
                     <!-- Order notes -->
                     <div>
-                        <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] block mb-2">Order Notes</label>
+                        <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] block mb-2">{{ __('Order Notes') }}</label>
                         <textarea
                             v-model="notes"
                             rows="2"
@@ -315,8 +348,8 @@ function getCartQty(menuItemId, variantId = null) {
 
                     <!-- Total -->
                     <div class="flex items-center justify-between px-4 py-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)]">
-                        <span class="text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">Order Total</span>
-                        <span class="text-xl font-heading font-black text-[var(--text-strong)]">${{ currency(cartTotal) }}</span>
+                        <span class="text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Order Total') }}</span>
+                        <span class="text-xl font-heading font-black text-[var(--text-strong)]">{{ currencyRaw(cartTotal) }} Birr</span>
                     </div>
 
                     <!-- Place order CTA -->
@@ -327,11 +360,10 @@ function getCartQty(menuItemId, variantId = null) {
                         style="background: linear-gradient(135deg, var(--brand) 0%, var(--brand-hover) 100%);"
                     >
                         <svg v-if="!form.processing" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <!-- Spinner -->
                         <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
 
                         <span class="font-black tracking-wide">
-                            {{ form.processing ? 'Placing Order...' : 'Place Order' }}
+                            {{ form.processing ? __('Placing Order...') : __('Place Order') }}
                         </span>
 
                         <span v-if="!form.processing && cartCount > 0" class="ml-auto text-white/70 text-sm font-bold">
@@ -346,13 +378,11 @@ function getCartQty(menuItemId, variantId = null) {
 </template>
 
 <style scoped>
-/* Cart item entrance/exit animation */
 .cart-item-enter-active { transition: all 250ms ease; }
 .cart-item-leave-active { transition: all 200ms ease; }
 .cart-item-enter-from   { opacity: 0; transform: translateX(-12px); }
 .cart-item-leave-to     { opacity: 0; transform: translateX(12px) scale(0.95); }
 
-/* Note field slide */
 .slide-down-enter-active { transition: all 200ms ease; max-height: 80px; }
 .slide-down-leave-active { transition: all 180ms ease; max-height: 80px; }
 .slide-down-enter-from,

@@ -89,6 +89,49 @@ class OrderService
         });
     }
 
+    public function markItemCooking(OrderItem $orderItem, int $userId): OrderItem
+    {
+        $from = $orderItem->kitchen_status;
+        $orderItem->update(['kitchen_status' => 'cooking']);
+
+        OrderItemLog::create([
+            'order_item_id' => $orderItem->id,
+            'user_id'       => $userId,
+            'action'        => 'status_changed',
+            'from_status'   => $from,
+            'to_status'     => 'cooking',
+            'ip_address'    => request()->ip(),
+        ]);
+
+        // Upgrade order status to in_progress
+        $order = $orderItem->order;
+        if ($order->status === 'confirmed') {
+            $order->update(['status' => 'in_progress']);
+            broadcast(new OrderStatusChanged($order));
+        }
+
+        broadcast(new OrderItemStatusChanged($orderItem));
+        return $orderItem;
+    }
+
+    public function markItemReady(OrderItem $orderItem, int $userId): OrderItem
+    {
+        $from = $orderItem->kitchen_status;
+        $orderItem->update(['kitchen_status' => 'ready']);
+
+        OrderItemLog::create([
+            'order_item_id' => $orderItem->id,
+            'user_id'       => $userId,
+            'action'        => 'status_changed',
+            'from_status'   => $from,
+            'to_status'     => 'ready',
+            'ip_address'    => request()->ip(),
+        ]);
+
+        broadcast(new OrderItemStatusChanged($orderItem));
+        return $orderItem;
+    }
+
     public function markItemDone(OrderItem $orderItem, int $userId): OrderItem
     {
         $from = $orderItem->kitchen_status;
@@ -119,23 +162,10 @@ class OrderService
         return $orderItem;
     }
 
+    /** @deprecated Use markItemCooking instead */
     public function markItemInProgress(OrderItem $orderItem, int $userId): OrderItem
     {
-        $from = $orderItem->kitchen_status;
-        $orderItem->update(['kitchen_status' => 'in_progress']);
-
-        OrderItemLog::create([
-            'order_item_id' => $orderItem->id,
-            'user_id'       => $userId,
-            'action'        => 'status_changed',
-            'from_status'   => $from,
-            'to_status'     => 'in_progress',
-            'ip_address'    => request()->ip(),
-        ]);
-
-        broadcast(new OrderItemStatusChanged($orderItem));
-
-        return $orderItem;
+        return $this->markItemCooking($orderItem, $userId);
     }
 
     public function voidItem(OrderItem $orderItem, string $reason, int $userId, ?int $approvedBy = null): OrderItem

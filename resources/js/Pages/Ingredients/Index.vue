@@ -75,6 +75,30 @@ function submitAdjust() {
     });
 }
 
+const showIssueForm = ref(false);
+const issueIngredient = ref(null);
+const issueForm = useForm({
+    ingredient_id: null,
+    type: 'issue',
+    quantity: '',
+    notes: '',
+});
+function openIssue(ingredient) {
+    issueIngredient.value = ingredient;
+    issueForm.ingredient_id = ingredient.id;
+    showIssueForm.value = true;
+}
+function submitIssue() {
+    issueForm.transform((data) => ({
+        ...data,
+        quantity: -Math.abs(parseFloat(data.quantity) || 0)
+    })).post(route('admin.ingredients.adjust'), {
+        preserveScroll: true,
+        onSuccess: () => { showIssueForm.value = false; issueForm.reset(); },
+    });
+}
+
+
 const deleteForm = useForm({});
 function deleteIngredient(ingredient) {
     if (confirm(`Delete "${ingredient.name}"?`)) {
@@ -130,11 +154,11 @@ function stockClass(ing) {
                     <table class="w-full text-sm text-left">
                         <thead>
                             <tr class="bg-[var(--bg-surface)] text-[var(--text-muted)] uppercase text-[10px] tracking-widest font-black">
-                                <th class="px-6 py-4">Stock Status</th>
-                                <th class="px-6 py-4">Ingredient Component</th>
-                                <th class="px-6 py-4 text-right">Current Supply</th>
-                                <th class="px-6 py-4 text-right">Unit Cost</th>
-                                <th class="px-6 py-4 text-right">Actions</th>
+                                <th class="px-6 py-4">{{ __('Stock Status') }}</th>
+                                <th class="px-6 py-4">{{ __('Ingredient Component') }}</th>
+                                <th class="px-6 py-4 text-right">{{ __('Current Supply') }}</th>
+                                <th class="px-6 py-4 text-right">{{ __('Unit Cost') }}</th>
+                                <th class="px-6 py-4 text-right">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[var(--border)]">
@@ -143,20 +167,20 @@ function stockClass(ing) {
                                     <div class="flex items-center gap-2">
                                         <span :class="ing.is_low_stock ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'" class="block w-2.5 h-2.5 rounded-full shadow-sm"></span>
                                         <span class="text-[10px] font-black uppercase" :class="ing.is_low_stock ? 'text-red-500' : 'text-emerald-600'">
-                                            {{ ing.is_low_stock ? 'Low Stock' : 'Sufficient' }}
+                                            {{ ing.is_low_stock ? __('Low Stock') : __('Sufficient') }}
                                         </span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="font-bold text-[var(--text-strong)]">{{ ing.name }}</div>
-                                    <div class="text-[10px] text-[var(--text-muted)] uppercase tracking-tighter">Measure: {{ ing.unit }}</div>
+                                    <div class="text-[10px] text-[var(--text-muted)] uppercase tracking-tighter">{{ __('Measure') }}: {{ ing.unit }}</div>
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="font-mono font-bold" :class="ing.is_low_stock ? 'text-red-500' : 'text-[var(--text-strong)]'">
                                         {{ Number(ing.current_stock).toFixed(2) }}
                                         <span class="text-[10px] font-normal text-[var(--text-muted)]">{{ ing.unit }}</span>
                                     </div>
-                                    <div class="text-[10px] text-[var(--text-muted)]">Reorder at {{ Number(ing.reorder_level).toFixed(2) }}</div>
+                                    <div class="text-[10px] text-[var(--text-muted)]">{{ __('Reorder at') }} {{ Number(ing.reorder_level).toFixed(2) }}</div>
                                 </td>
                                 <td class="px-6 py-4 text-right font-mono text-emerald-600 dark:text-emerald-400 font-bold">
                                     ${{ Number(ing.cost_per_unit).toFixed(4) }}
@@ -164,13 +188,16 @@ function stockClass(ing) {
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-2 text-right">
                                         <button @click="openIntake(ing)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-200 text-emerald-600 text-[10px] font-black hover:bg-emerald-50 dark:border-emerald-900/30 dark:hover:bg-emerald-900/10 transition-colors">
-                                            INTAKE
+                                            {{ __('INTAKE') }}
+                                        </button>
+                                        <button @click="openIssue(ing)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 text-blue-600 text-[10px] font-black hover:bg-blue-50 dark:border-blue-900/30 dark:hover:bg-blue-900/10 transition-colors">
+                                            {{ __('ISSUE') }}
                                         </button>
                                         <button @click="openAdjust(ing)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-orange-200 text-orange-600 text-[10px] font-black hover:bg-orange-50 dark:border-orange-900/30 dark:hover:bg-orange-900/10 transition-colors">
-                                            ADJUST
+                                            {{ __('ADJUST') }}
                                         </button>
                                         <Link :href="route('admin.ingredients.movements', ing.id)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--border)] text-[var(--text-strong)] text-[10px] font-black hover:bg-[var(--bg-card)] transition-colors">
-                                            LEDGER
+                                            {{ __('LEDGER') }}
                                         </Link>
                                         <button @click="deleteIngredient(ing)" class="btn-icon hover:text-red-500" title="Delete Ingredient">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -185,7 +212,7 @@ function stockClass(ing) {
                 <!-- Pagination -->
                 <div v-if="ingredients.links.length > 3" class="px-6 py-4 bg-[var(--bg-surface)] flex items-center justify-between border-t border-[var(--border)]">
                     <p class="text-xs text-[var(--text-muted)] font-medium">
-                        Showing {{ ingredients.from }} to {{ ingredients.to }} of {{ ingredients.total }} ingredients
+                        {{ __('Showing') }} {{ ingredients.from }} {{ __('to') }} {{ ingredients.to }} {{ __('of') }} {{ ingredients.total }} {{ __('ingredients') }}
                     </p>
                     <div class="flex gap-1">
                         <Link 
@@ -212,8 +239,8 @@ function stockClass(ing) {
                         <!-- Header -->
                         <div class="px-6 py-5 border-b border-[var(--border)] bg-[var(--bg-surface)] flex items-center justify-between">
                             <div>
-                                <h2 class="text-base font-heading font-black text-[var(--text-strong)]">New Ingredient</h2>
-                                <p class="text-xs text-[var(--text-muted)] font-medium mt-0.5">Register a raw material in the inventory supply.</p>
+                                <h2 class="text-base font-heading font-black text-[var(--text-strong)]">{{ __('New Ingredient') }}</h2>
+                                <p class="text-xs text-[var(--text-muted)] font-medium mt-0.5">{{ __('Register a raw material in the inventory supply.') }}</p>
                             </div>
                             <button @click="showCreateForm = false" class="btn-icon w-9 h-9">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -223,33 +250,33 @@ function stockClass(ing) {
                         <div class="px-6 py-6 space-y-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Name</label>
-                                    <input v-model="createForm.name" placeholder="Sugar, Milk, etc." class="input-premium" />
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Name') }}</label>
+                                    <input v-model="createForm.name" :placeholder="__('Sugar, Milk, etc.')" class="input-premium" />
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Unit</label>
-                                    <input v-model="createForm.unit" placeholder="kg, ltr, pcs" class="input-premium" />
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Unit') }}</label>
+                                    <input v-model="createForm.unit" :placeholder="__('kg, ltr, pcs')" class="input-premium" />
                                 </div>
                             </div>
                             <div class="grid grid-cols-3 gap-3">
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Opening Stock</label>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Opening Stock') }}</label>
                                     <input v-model="createForm.current_stock" type="number" step="0.01" class="input-premium font-mono" />
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Min Level</label>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Min Level') }}</label>
                                     <input v-model="createForm.reorder_level" type="number" step="0.01" class="input-premium font-mono" />
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Cost/Unit</label>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Cost/Unit') }}</label>
                                     <input v-model="createForm.cost_per_unit" type="number" step="0.0001" class="input-premium font-mono" />
                                 </div>
                             </div>
                         </div>
 
                         <div class="px-6 pb-6 flex gap-3">
-                            <button @click="showCreateForm = false" class="btn-secondary flex-1 py-3">Cancel</button>
-                            <button @click="createIngredient" :disabled="createForm.processing" class="btn-primary flex-1 py-3">Register Entry</button>
+                            <button @click="showCreateForm = false" class="btn-secondary flex-1 py-3">{{ __('Cancel') }}</button>
+                            <button @click="createIngredient" :disabled="createForm.processing" class="btn-primary flex-1 py-3">{{ __('Register Entry') }}</button>
                         </div>
                     </div>
                 </div>
@@ -267,8 +294,8 @@ function stockClass(ing) {
                                 <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h2 class="text-base font-heading font-black text-emerald-500">Record Stock Intake</h2>
-                                <p class="text-xs text-[var(--text-muted)] font-medium truncate">Restocking: <strong class="text-[var(--text-strong)]">{{ intakeIngredient?.name }}</strong></p>
+                                <h2 class="text-base font-heading font-black text-emerald-500">{{ __('Record Stock Intake') }}</h2>
+                                <p class="text-xs text-[var(--text-muted)] font-medium truncate">{{ __('Restocking') }}: <strong class="text-[var(--text-strong)]">{{ intakeIngredient?.name }}</strong></p>
                             </div>
                             <button @click="showIntakeForm = false" class="btn-icon w-9 h-9">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -278,36 +305,36 @@ function stockClass(ing) {
                         <div class="px-6 py-6 space-y-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Qty to Add</label>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Qty to Add') }}</label>
                                     <div class="relative">
                                         <input v-model="intakeForm.quantity" type="number" step="0.01" placeholder="0.00" class="input-premium pr-12 font-mono" />
                                         <span class="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-[var(--text-muted)] font-black">{{ intakeIngredient?.unit }}</span>
                                     </div>
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Cost / {{ intakeIngredient?.unit }}</label>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Cost') }} / {{ intakeIngredient?.unit }}</label>
                                     <input v-model="intakeForm.cost_per_unit" type="number" step="0.0001" class="input-premium font-mono" />
                                 </div>
                             </div>
                             <div class="space-y-1.5">
-                                <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Supplier</label>
-                                <input v-model="intakeForm.supplier" placeholder="Wholesaler / Market Name" class="input-premium" />
+                                <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Supplier') }}</label>
+                                <input v-model="intakeForm.supplier" :placeholder="__('Wholesaler / Market Name')" class="input-premium" />
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Ref / Invoice #</label>
-                                    <input v-model="intakeForm.reference" placeholder="INV-2024..." class="input-premium" />
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Ref / Invoice #') }}</label>
+                                    <input v-model="intakeForm.reference" :placeholder="__('INV-2024...')" class="input-premium" />
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Date</label>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Date') }}</label>
                                     <input v-model="intakeForm.intake_date" type="date" class="input-premium" />
                                 </div>
                             </div>
                         </div>
 
                         <div class="px-6 pb-6 flex gap-3">
-                            <button @click="showIntakeForm = false" class="btn-secondary flex-1 py-3">Cancel</button>
-                            <button @click="submitIntake" :disabled="intakeForm.processing" class="flex-1 py-3 btn-haptic bg-emerald-500 text-white font-black rounded-xl shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all disabled:opacity-50">Confirm Intake</button>
+                            <button @click="showIntakeForm = false" class="btn-secondary flex-1 py-3">{{ __('Cancel') }}</button>
+                            <button @click="submitIntake" :disabled="intakeForm.processing" class="flex-1 py-3 btn-haptic bg-emerald-500 text-white font-black rounded-xl shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all disabled:opacity-50">{{ __('Confirm Intake') }}</button>
                         </div>
                     </div>
                 </div>
@@ -325,8 +352,8 @@ function stockClass(ing) {
                                 <svg class="w-5 h-5 text-[var(--warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h2 class="text-base font-heading font-black text-[var(--warning)]">Manual Adjustment</h2>
-                                <p class="text-xs text-[var(--text-muted)] font-medium truncate">Item: <strong class="text-[var(--text-strong)]">{{ adjustIngredient?.name }}</strong></p>
+                                <h2 class="text-base font-heading font-black text-[var(--warning)]">{{ __('Manual Adjustment') }}</h2>
+                                <p class="text-xs text-[var(--text-muted)] font-medium truncate">{{ __('Item') }}: <strong class="text-[var(--text-strong)]">{{ adjustIngredient?.name }}</strong></p>
                             </div>
                             <button @click="showAdjustForm = false" class="btn-icon w-9 h-9">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -336,32 +363,83 @@ function stockClass(ing) {
                         <div class="px-6 py-6 space-y-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Qty (– for loss)</label>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Qty (– for loss)') }}</label>
                                     <div class="relative">
                                         <input v-model="adjustForm.quantity" type="number" step="0.01" class="input-premium pr-12 font-mono" />
                                         <span class="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-[var(--text-muted)] font-black">{{ adjustIngredient?.unit }}</span>
                                     </div>
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Reason</label>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Reason') }}</label>
                                     <select v-model="adjustForm.type" class="input-premium">
-                                        <option value="spoilage">Spoilage</option>
-                                        <option value="damage">Damage / Breakage</option>
-                                        <option value="staff_meal">Staff Meal</option>
-                                        <option value="found">Found / Audit</option>
-                                        <option value="other">Other</option>
+                                        <option value="spoilage">{{ __('Spoilage') }}</option>
+                                        <option value="damage">{{ __('Damage / Breakage') }}</option>
+                                        <option value="staff_meal">{{ __('Staff Meal') }}</option>
+                                        <option value="found">{{ __('Found / Audit') }}</option>
+                                        <option value="other">{{ __('Other') }}</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="space-y-1.5">
-                                <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Notes</label>
-                                <input v-model="adjustForm.notes" placeholder="Explanation for adjustment" class="input-premium" />
+                                <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Notes') }}</label>
+                                <input v-model="adjustForm.notes" :placeholder="__('Explanation for adjustment')" class="input-premium" />
                             </div>
                         </div>
 
                         <div class="px-6 pb-6 flex gap-3">
-                            <button @click="showAdjustForm = false" class="btn-secondary flex-1 py-3">Cancel</button>
-                            <button @click="submitAdjust" :disabled="adjustForm.processing" class="flex-1 py-3 btn-haptic bg-[var(--warning)] text-white font-black rounded-xl shadow-lg hover:opacity-90 transition-all disabled:opacity-50">Record Adjustment</button>
+                            <button @click="showAdjustForm = false" class="btn-secondary flex-1 py-3">{{ __('Cancel') }}</button>
+                            <button @click="submitAdjust" :disabled="adjustForm.processing" class="flex-1 py-3 btn-haptic bg-[var(--warning)] text-white font-black rounded-xl shadow-lg hover:opacity-90 transition-all disabled:opacity-50">{{ __('Record Adjustment') }}</button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <!-- Issue to Kitchen Modal -->
+        <Teleport to="body">
+            <Transition name="modal-fade">
+                <div v-if="showIssueForm" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4">
+                    <div class="w-full max-w-md glass-panel shadow-2xl overflow-hidden">
+                        <!-- Header -->
+                        <div class="px-6 py-5 border-b border-blue-500/20 bg-blue-500/5 flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h2 class="text-base font-heading font-black text-blue-500">{{ __('Issue to Kitchen') }}</h2>
+                                <p class="text-xs text-[var(--text-muted)] font-medium truncate">{{ __('Item') }}: <strong class="text-[var(--text-strong)]">{{ issueIngredient?.name }}</strong></p>
+                            </div>
+                            <button @click="showIssueForm = false" class="btn-icon w-9 h-9">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+
+                        <div class="px-6 py-6 space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Amt to Issue') }}</label>
+                                    <div class="relative">
+                                        <input v-model="issueForm.quantity" type="number" step="0.01" class="input-premium pr-12 font-mono" />
+                                        <span class="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-[var(--text-muted)] font-black">{{ issueIngredient?.unit }}</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Type') }}</label>
+                                    <select v-model="issueForm.type" class="input-premium">
+                                        <option value="issue">{{ __('Prep Usage') }}</option>
+                                        <option value="issue_event">{{ __('Event Catering') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Prep Notes') }}</label>
+                                <input v-model="issueForm.notes" :placeholder="__('e.g., Issued for making sauce base')" class="input-premium" />
+                            </div>
+                        </div>
+
+                        <div class="px-6 pb-6 flex gap-3">
+                            <button @click="showIssueForm = false" class="btn-secondary flex-1 py-3">{{ __('Cancel') }}</button>
+                            <button @click="submitIssue" :disabled="issueForm.processing" class="flex-1 py-3 btn-haptic bg-blue-500 text-white font-black rounded-xl shadow-lg hover:opacity-90 transition-all disabled:opacity-50">{{ __('Confirm Issue') }}</button>
                         </div>
                     </div>
                 </div>

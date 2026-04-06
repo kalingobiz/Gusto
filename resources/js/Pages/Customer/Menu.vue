@@ -90,10 +90,10 @@ function currency(v) { return Number(v).toFixed(2); }
                 </div>
             </div>
             <div class="space-y-2">
-                <h1 class="text-3xl font-black tracking-tighter text-[var(--text-strong)]">Order Received!</h1>
-                <p class="text-[var(--text-muted)] leading-relaxed">Your selection has been sent to our master chefs. Relax and enjoy — we'll take it from here.</p>
+                <h1 class="text-3xl font-black tracking-tighter text-[var(--text-strong)]">{{ __('Order Received!') }}</h1>
+                <p class="text-[var(--text-muted)] leading-relaxed">{{ __('Your selection has been sent to our master chefs. Relax and enjoy — we\'ll take it from here.') }}</p>
             </div>
-            <button @click="submitted = false" class="w-full bg-[var(--brand)] text-white py-4 rounded-2xl font-black text-lg hover:bg-[var(--brand-hover)] shadow-xl shadow-[var(--brand-glow)] transition-all">Order More</button>
+            <button @click="submitted = false" class="w-full bg-[var(--brand)] text-white py-4 rounded-2xl font-black text-lg hover:bg-[var(--brand-hover)] shadow-xl shadow-[var(--brand-glow)] transition-all">{{ __('Order More') }}</button>
         </div>
 
         <template v-else>
@@ -162,7 +162,7 @@ function currency(v) { return Number(v).toFixed(2); }
 
                         <!-- Variants -->
                         <div v-if="selectedItem.variants?.length" class="space-y-3">
-                            <div class="text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">Customizations</div>
+                            <div class="text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">{{ __('Customizations') }}</div>
                             <div class="grid grid-cols-1 gap-2">
                                 <button
                                     v-for="v in selectedItem.variants"
@@ -177,8 +177,8 @@ function currency(v) { return Number(v).toFixed(2); }
                         </div>
 
                         <div class="flex gap-3 pt-4">
-                            <button @click="selectedItem = null" class="flex-1 bg-[var(--bg-surface)] text-[var(--text-strong)] py-4 rounded-2xl font-bold border border-[var(--border)] active:scale-95 transition-all">Back</button>
-                            <button v-if="!selectedItem.variants?.length" @click="addItem(selectedItem)" class="flex-[2] bg-[var(--brand)] text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-[var(--brand-glow)] active:scale-95 transition-all">Add To Bag</button>
+                            <button @click="selectedItem = null" class="flex-1 bg-[var(--bg-surface)] text-[var(--text-strong)] py-4 rounded-2xl font-bold border border-[var(--border)] active:scale-95 transition-all">{{ __('Back') }}</button>
+                            <button v-if="!selectedItem.variants?.length" @click="addItem(selectedItem)" class="flex-[2] bg-[var(--brand)] text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-[var(--brand-glow)] active:scale-95 transition-all">{{ __('Add To Bag') }}</button>
                         </div>
                     </div>
                 </div>
@@ -192,7 +192,7 @@ function currency(v) { return Number(v).toFixed(2); }
                     <div class="w-8 h-8 rounded-full bg-[var(--brand)] text-white flex items-center justify-center font-black text-sm shadow-lg shadow-[var(--brand-glow)] group-active:scale-110 transition-transform">
                         {{ cartCount }}
                     </div>
-                    <span class="text-sm font-black uppercase tracking-widest">Review Selection</span>
+                    <span class="text-sm font-black uppercase tracking-widest">{{ __('Review Selection') }}</span>
                 </div>
                 <span class="text-xl font-black italic">${{ currency(cartTotal) }}</span>
             </button>

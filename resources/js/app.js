@@ -17,7 +17,20 @@ createInertiaApp({
             import.meta.glob('./Pages/**/*.vue'),
         ),
     setup({ el, App, props, plugin }) {
-        return createApp({ render: () => h(App, props) })
+        const vueApp = createApp({ render: () => h(App, props) });
+
+        vueApp.config.globalProperties.__ = function (key, replacements = {}) {
+            const translations = this.$page?.props?.translations || {};
+            let translation = translations[key] || key;
+            
+            Object.keys(replacements).forEach(r => {
+                translation = translation.replace(`:${r}`, replacements[r]);
+            });
+            
+            return translation;
+        };
+
+        return vueApp
             .use(plugin)
             .use(ZiggyVue)
             .mount(el);

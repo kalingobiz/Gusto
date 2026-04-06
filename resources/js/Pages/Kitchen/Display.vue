@@ -1,13 +1,13 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import KitchenLayout from '@/Layouts/KitchenLayout.vue';
-import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
     orders: Array,
 });
 
-const orders = ref(props.orders ?? []);
+// Newest first (LIFO) — already sorted by backend, just ensure reversed on arrival
+const orders = ref([...(props.orders ?? [])].reverse());
 const usePolling = import.meta.env.VITE_USE_POLLING === 'true';
 let pollTimer = null;
 let echoChannel = null;
@@ -24,13 +24,17 @@ function urgencyClass(createdAt) {
     return 'border-red-500 bg-red-950/30 animate-pulse';
 }
 
+// Full status config for kitchen display
+const statusConfig = {
+    pending:  { label: 'Pending',  cls: 'bg-gray-700 text-gray-300',     btn: 'Start Cooking', nextStatus: 'cooking',  btnCls: 'bg-yellow-700 hover:bg-yellow-600' },
+    cooking:  { label: 'Cooking',  cls: 'bg-amber-600/80 text-white',     btn: 'Mark Ready',    nextStatus: 'ready',    btnCls: 'bg-blue-700 hover:bg-blue-600' },
+    ready:    { label: 'Ready',    cls: 'bg-blue-700 text-white',         btn: 'Delivered ✓',  nextStatus: 'done',     btnCls: 'bg-green-700 hover:bg-green-600' },
+    done:     { label: 'Done',     cls: 'bg-green-700 text-white',        btn: null,            nextStatus: null,       btnCls: '' },
+    voided:   { label: 'Voided',   cls: 'bg-red-900 text-red-300 line-through', btn: null,     nextStatus: null,       btnCls: '' },
+};
+
 function itemStatusClass(status) {
-    return {
-        pending:     'bg-gray-700 text-gray-300',
-        in_progress: 'bg-yellow-600 text-white',
-        done:        'bg-green-700 text-white',
-        voided:      'bg-red-900 text-red-300 line-through',
-    }[status] ?? 'bg-gray-700 text-gray-300';
+    return statusConfig[status]?.cls ?? 'bg-gray-700 text-gray-300';
 }
 
 async function updateItemStatus(item, status) {
@@ -46,7 +50,7 @@ async function updateItemStatus(item, status) {
         if (found) { found.kitchen_status = status; break; }
     }
 
-    // Remove order if all items done/voided
+    // Remove order from kitchen view if all items are done/voided/delivered
     orders.value = orders.value.filter(order => {
         const active = order.items?.filter(i => !['done', 'voided'].includes(i.kitchen_status));
         return active?.length > 0;
@@ -58,9 +62,9 @@ function addOrUpdateOrder(newOrder) {
     if (idx >= 0) {
         orders.value[idx] = { ...orders.value[idx], ...newOrder.order };
     } else {
+        // LIFO: newest at the TOP
         orders.value.unshift(newOrder.order);
     }
-    // Play notification sound
     try { new Audio('/sounds/bell.mp3').play(); } catch {}
 }
 
@@ -69,7 +73,8 @@ onMounted(() => {
         pollTimer = setInterval(async () => {
             const res = await fetch(route('kitchen.pending'));
             const data = await res.json();
-            orders.value = data;
+            // Reverse to show newest first
+            orders.value = [...data].reverse();
         }, 5000);
     } else if (window.Echo) {
         echoChannel = window.Echo.channel('kitchen')
@@ -91,8 +96,9 @@ onUnmounted(() => {
 
 <template>
     <KitchenLayout>
-        <div v-if="!orders.length" class="flex items-center justify-center h-64 text-gray-500 text-xl">
-            No active orders — kitchen is clear ✓
+        <div v-if="!orders.length" class="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
+            <div class="text-5xl">✓</div>
+            <div class="text-xl font-bold">{{ __('Kitchen is clear — no active orders') }}</div>
         </div>
 
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -119,27 +125,27 @@ onUnmounted(() => {
                     <div
                         v-for="item in order.items"
                         :key="item.id"
-                        class="flex items-center gap-2 px-3 py-2.5 rounded-lg"
+                        class="flex items-center gap-2 px-3 py-2.5 rounded-lg mb-1 transition-all duration-300"
                         :class="itemStatusClass(item.kitchen_status)"
                     >
                         <span class="text-lg font-bold w-6 shrink-0">{{ item.quantity }}×</span>
                         <div class="flex-1 min-w-0">
                             <div class="font-medium truncate">{{ item.menu_item?.name ?? item.name }}</div>
                             <div v-if="item.notes" class="text-xs opacity-75 mt-0.5">{{ item.notes }}</div>
+                            <!-- Status badge -->
+                            <div class="text-[10px] font-bold uppercase tracking-wider opacity-60 mt-0.5">
+                                {{ __(statusConfig[item.kitchen_status]?.label) }}
+                            </div>
                         </div>
 
-                        <!-- Action buttons -->
-                        <div class="flex flex-col gap-1 shrink-0" v-if="item.kitchen_status !== 'voided'">
+                        <!-- Action button — step through statuses -->
+                        <div class="flex flex-col gap-1 shrink-0" v-if="item.kitchen_status !== 'voided' && item.kitchen_status !== 'done'">
                             <button
-                                v-if="item.kitchen_status === 'pending'"
-                                @click="updateItemStatus(item, 'in_progress')"
-                                class="text-xs bg-yellow-700 hover:bg-yellow-600 text-white px-2 py-1 rounded"
-                            >Start</button>
-                            <button
-                                v-if="item.kitchen_status === 'in_progress'"
-                                @click="updateItemStatus(item, 'done')"
-                                class="text-xs bg-green-700 hover:bg-green-600 text-white px-2 py-1 rounded"
-                            >Done ✓</button>
+                                v-if="statusConfig[item.kitchen_status]?.btn"
+                                @click="updateItemStatus(item, statusConfig[item.kitchen_status].nextStatus)"
+                                class="text-xs text-white px-2 py-1.5 rounded font-bold transition-all"
+                                :class="statusConfig[item.kitchen_status].btnCls"
+                            >{{ __(statusConfig[item.kitchen_status].btn) }}</button>
                         </div>
                     </div>
                 </div>

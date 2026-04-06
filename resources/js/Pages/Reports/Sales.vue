@@ -25,10 +25,13 @@ function currency(v) { return Number(v || 0).toFixed(2); }
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h1 class="text-3xl font-black text-[var(--text-strong)]">Sales Report</h1>
-                <div class="flex gap-2 text-xs">
+            <div class="flex gap-2 text-xs flex-wrap">
                     <Link :href="route('admin.reports.bom-variance')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">BOM Variance</Link>
                     <Link :href="route('admin.reports.voids')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">Void Log</Link>
                     <Link :href="route('admin.reports.audit')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">Audit Trail</Link>
+                    <Link :href="route('admin.reports.stock')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">Stock</Link>
+                    <Link :href="route('admin.reports.item-performance')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">Item Performance</Link>
+                    <Link :href="route('admin.reports.hourly-sales')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">Hourly</Link>
                 </div>
             </div>
 
@@ -44,7 +47,7 @@ function currency(v) { return Number(v || 0).toFixed(2); }
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div class="glass-card p-6 border-l-4 border-emerald-500">
                     <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Total Revenue</div>
-                    <div class="text-3xl font-heading font-black text-[var(--text-strong)]">${{ currency(summary?.revenue) }}</div>
+                    <div class="text-3xl font-heading font-black text-[var(--text-strong)]">{{ currency(summary?.revenue) }} Birr</div>
                 </div>
                 <div class="glass-card p-6 border-l-4 border-[var(--brand)]">
                     <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Paid Orders</div>
@@ -52,7 +55,7 @@ function currency(v) { return Number(v || 0).toFixed(2); }
                 </div>
                 <div class="glass-card p-6 border-l-4 border-blue-500">
                     <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Tax Collected</div>
-                    <div class="text-3xl font-heading font-black text-[var(--text-strong)]">${{ currency(summary?.tax_collected) }}</div>
+                    <div class="text-3xl font-heading font-black text-[var(--text-strong)]">{{ currency(summary?.tax_collected) }} Birr</div>
                 </div>
             </div>
 
@@ -77,7 +80,7 @@ function currency(v) { return Number(v || 0).toFixed(2); }
                                     <div class="text-[10px] text-[var(--text-muted)] uppercase">{{ item.category }}</div>
                                 </td>
                                 <td class="px-5 py-3 text-right font-mono text-[var(--text-base)]">{{ item.total_qty }}</td>
-                                <td class="px-5 py-3 text-right font-mono font-bold text-emerald-500">${{ currency(item.total_revenue) }}</td>
+                                <td class="px-5 py-3 text-right font-mono font-bold text-emerald-500">{{ currency(item.total_revenue) }} Birr</td>
                             </tr>
                             <tr v-if="!byItem?.length">
                                 <td colspan="3" class="px-5 py-8 text-center text-[var(--text-muted)] italic text-sm">No data</td>
@@ -96,7 +99,7 @@ function currency(v) { return Number(v || 0).toFixed(2); }
                             <div v-for="p in byPaymentMethod" :key="p.method" class="px-5 py-3 flex items-center justify-between hover:bg-[var(--bg-surface)] transition-colors">
                                 <span class="text-sm font-bold text-[var(--text-strong)] capitalize">{{ p.method.replace('_', ' ') }}</span>
                                 <div class="text-right">
-                                    <div class="font-black font-mono text-emerald-500">${{ currency(p.total) }}</div>
+                                    <div class="font-black font-mono text-emerald-500">{{ currency(p.total) }} Birr</div>
                                     <div class="text-[10px] text-[var(--text-muted)] font-bold">{{ p.count }} transactions</div>
                                 </div>
                             </div>
@@ -112,7 +115,7 @@ function currency(v) { return Number(v || 0).toFixed(2); }
                             <div v-for="d in byDay" :key="d.date" class="px-5 py-2.5 flex items-center justify-between hover:bg-[var(--bg-surface)] transition-colors">
                                 <span class="text-sm text-[var(--text-muted)] font-medium">{{ d.date }}</span>
                                 <div class="text-right">
-                                    <div class="font-bold font-mono text-[var(--text-strong)]">${{ currency(d.revenue) }}</div>
+                                    <div class="font-bold font-mono text-[var(--text-strong)]">{{ currency(d.revenue) }} Birr</div>
                                     <div class="text-[10px] text-[var(--text-muted)] font-bold">{{ d.orders }} orders</div>
                                 </div>
                             </div>
