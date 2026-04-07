@@ -1,6 +1,7 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { useForm, Link } from '@inertiajs/vue3';
+import ReportNav from '@/Components/ReportNav.vue';
+import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
     from: String, to: String, voids: Object, byUser: Array,
@@ -18,10 +19,7 @@ function applyFilter() {
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h1 class="text-3xl font-black text-[var(--text-strong)]">Void Log</h1>
-                <div class="flex gap-2 text-xs">
-                    <Link :href="route('admin.reports.sales')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">← Sales</Link>
-                    <Link :href="route('admin.reports.audit')" class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">Audit Trail →</Link>
-                </div>
+                <ReportNav />
             </div>
 
             <!-- Date filter -->

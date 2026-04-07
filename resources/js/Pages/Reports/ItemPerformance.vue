@@ -1,6 +1,7 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { Link, useForm } from '@inertiajs/vue3';
+import ReportNav from '@/Components/ReportNav.vue';
+import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
     from: String,
@@ -21,14 +22,7 @@ function pct(revenue) {
     return Math.round((revenue / props.totalRevenue) * 100);
 }
 
-const reportLinks = [
-    { label: 'Sales',        route: 'admin.reports.sales' },
-    { label: 'BOM Variance', route: 'admin.reports.bom-variance' },
-    { label: 'Void Log',     route: 'admin.reports.voids' },
-    { label: 'Audit Trail',  route: 'admin.reports.audit' },
-    { label: 'Stock',        route: 'admin.reports.stock' },
-    { label: 'Hourly Sales', route: 'admin.reports.hourly-sales' },
-];
+
 </script>
 
 <template>
@@ -37,10 +31,7 @@ const reportLinks = [
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h1 class="text-3xl font-black text-[var(--text-strong)]">Item <span class="text-[var(--brand)]">Performance</span></h1>
-                <div class="flex gap-2 text-xs flex-wrap">
-                    <Link v-for="l in reportLinks" :key="l.route" :href="route(l.route)"
-                        class="btn-secondary px-3 py-1.5 font-bold uppercase tracking-widest">{{ l.label }}</Link>
-                </div>
+                <ReportNav />
             </div>
 
             <!-- Date filter -->

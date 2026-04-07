@@ -8,6 +8,7 @@ const props = defineProps({
 });
 
 const tables = ref(props.tables);
+const loading = ref(false);
 
 // Keep tables in sync when Inertia refreshes props
 watch(() => props.tables, (updated) => {
@@ -53,11 +54,20 @@ onMounted(() => {
 onUnmounted(() => echoChannel?.stopListening('.table.status-changed'));
 
 function openOrder(table) {
-    router.get(route('orders.create'), { table_id: table.id });
+    if (loading.value) return;
+    loading.value = true;
+    router.get(route('orders.create'), { table_id: table.id }, {
+        onFinish: () => { loading.value = false; },
+    });
 }
 
 function markClean(table) {
-    router.patch(route('tables.clear', table.id), {}, { preserveScroll: true });
+    if (loading.value) return;
+    loading.value = true;
+    router.patch(route('tables.clear', table.id), {}, {
+        preserveScroll: true,
+        onFinish: () => { loading.value = false; },
+    });
 }
 </script>
 
@@ -91,7 +101,6 @@ function markClean(table) {
                     <!-- Table ID & Capacity -->
                     <div class="flex items-start justify-between mb-4">
                         <div>
-                            <span class="text-[10px] font-black uppercase tracking-tighter block mb-1 opacity-50">{{ __('SECTION') }} A</span>
                             <span class="text-2xl font-black italic">{{ table.number }}</span>
                         </div>
                         <div class="text-right">
@@ -112,11 +121,13 @@ function markClean(table) {
 
                     <!-- Available State Action -->
                     <div v-if="table.status === 'available'" class="pt-2">
-                        <button 
-                            @click="openOrder(table)" 
-                            class="w-full text-[10px] font-black uppercase tracking-widest bg-[var(--brand)] text-white py-3 rounded-xl shadow-lg shadow-[var(--brand-glow)] hover:bg-[var(--brand-hover)] active:scale-95 transition-all"
+                        <button
+                            @click="openOrder(table)"
+                            :disabled="loading"
+                            class="w-full text-[10px] font-black uppercase tracking-widest bg-[var(--brand)] text-white py-3 rounded-xl shadow-lg shadow-[var(--brand-glow)] hover:bg-[var(--brand-hover)] active:scale-95 transition-all disabled:opacity-60"
                         >
-                            + {{ __('NEW ORDER') }}
+                            <span v-if="loading">…</span>
+                            <span v-else>+ {{ __('NEW ORDER') }}</span>
                         </button>
                     </div>
 
@@ -139,9 +150,10 @@ function markClean(table) {
 
                     <!-- Cleaning State Action -->
                     <div v-else-if="table.status === 'cleaning'" class="pt-2">
-                        <button 
-                            @click="markClean(table)" 
-                            class="w-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 py-3 rounded-xl hover:bg-emerald-500 hover:text-white transition-all"
+                        <button
+                            @click="markClean(table)"
+                            :disabled="loading"
+                            class="w-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 py-3 rounded-xl hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-60"
                         >
                             {{ __('CLEARED') }}
                         </button>

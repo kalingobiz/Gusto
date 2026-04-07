@@ -5,6 +5,7 @@ import { useForm, router } from '@inertiajs/vue3';
 
 const props = defineProps({ order: Object });
 const order = ref(props.order);
+const servingLoading = ref(false);
 
 // Keep order ref in sync whenever Inertia refreshes the page props
 watch(() => props.order, (updated) => {
@@ -151,8 +152,10 @@ const progressPct  = computed(() => {
                         class="px-6 py-4 flex items-center gap-4 hover:bg-[var(--bg-surface)]/50 transition-colors group"
                     >
                         <!-- Item icon -->
-                        <div class="w-10 h-10 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center text-base flex-shrink-0">
-                            🍽️
+                        <div class="w-10 h-10 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
                         </div>
 
                         <!-- Name + notes -->
@@ -215,7 +218,11 @@ const progressPct  = computed(() => {
                             :key="item.id"
                             class="px-6 py-3 flex items-center gap-4 opacity-50"
                         >
-                            <div class="w-10 h-10 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center text-base">🍽️</div>
+                            <div class="w-10 h-10 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-[var(--text-muted)] opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm font-bold text-[var(--text-muted)] line-through truncate">{{ item.menu_item?.name }}</div>
                                 <div v-if="item.void_log" class="text-[10px] text-[var(--danger)] font-bold">{{ item.void_log.reason }}</div>
@@ -251,18 +258,18 @@ const progressPct  = computed(() => {
             <div v-if="!['paid', 'voided'].includes(order.status)" class="flex flex-col sm:flex-row gap-3">
                 <button
                     v-if="order.status === 'ready'"
-                    @click="router.patch(route('orders.served', order.id))"
-                    class="flex-1 btn-primary py-3.5 text-sm flex items-center justify-center gap-2"
-                    style="background: linear-gradient(135deg, #a855f7, #7c3aed);"
+                    @click="servingLoading = true; router.patch(route('orders.served', order.id), {}, { onFinish: () => servingLoading = false })"
+                    :disabled="servingLoading"
+                    class="flex-1 btn-purple py-3.5 text-sm flex items-center justify-center gap-2 disabled:opacity-60"
                 >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Mark as Served
+                    <svg v-if="!servingLoading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                    {{ servingLoading ? 'Marking…' : 'Mark as Served' }}
                 </button>
                 <button
                     v-if="['served','ready','confirmed','in_progress'].includes(order.status)"
                     @click="showPayment = true"
-                    class="flex-1 btn-primary py-3.5 text-sm flex items-center justify-center gap-2"
-                    style="background: linear-gradient(135deg, #10b981, #059669);"
+                    class="flex-1 btn-success py-3.5 text-sm flex items-center justify-center gap-2"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                     Record Payment
@@ -348,8 +355,7 @@ const progressPct  = computed(() => {
                             <button
                                 @click="submitPayment"
                                 :disabled="payForm.processing"
-                                class="btn-primary flex-1 py-3 disabled:opacity-50 flex items-center justify-center gap-2"
-                                style="background: linear-gradient(135deg, #10b981, #059669);"
+                                class="btn-success flex-1 py-3 disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                 {{ payForm.processing ? 'Processing...' : 'Confirm Payment' }}

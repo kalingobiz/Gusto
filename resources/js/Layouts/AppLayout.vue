@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
@@ -17,7 +17,7 @@ function updateClock() {
 }
 if (typeof window !== 'undefined') {
     updateClock();
-    clockTimer = setInterval(updateClock, 30000);
+    clockTimer = setInterval(updateClock, 1000);
 }
 
 const toggleTheme = () => {
@@ -40,7 +40,23 @@ onMounted(() => {
     }
 });
 
-onUnmounted(() => clearInterval(clockTimer));
+onUnmounted(() => {
+    clearInterval(clockTimer);
+    clearTimeout(flashTimer);
+});
+
+// Flash auto-dismiss
+const flashVisible = ref(false);
+let flashTimer = null;
+watch(flash, (val) => {
+    if (val?.success || val?.error) {
+        flashVisible.value = true;
+        clearTimeout(flashTimer);
+        flashTimer = setTimeout(() => { flashVisible.value = false; }, 4500);
+    } else {
+        flashVisible.value = false;
+    }
+}, { immediate: true });
 
 const navItems = computed(() => {
     const role = user.value?.role;
@@ -95,10 +111,9 @@ const isActive = (href) => {
         <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-[var(--brand)]/5 blur-[120px] rounded-full pointer-events-none"></div>
         <div class="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-blue-500/5 blur-[120px] rounded-full pointer-events-none"></div>
 
-        <!-- Sidebar -->
         <aside
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            class="fixed inset-y-0 left-0 z-50 w-64 bg-[var(--bg-card)]/40 backdrop-blur-2xl border-r border-[var(--border)] transition-all duration-500 lg:relative lg:translate-x-0 lg:flex lg:flex-col shadow-[20px_0_40px_rgba(0,0,0,0.1)]"
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-[var(--bg-card)] lg:bg-[var(--bg-card)]/80 backdrop-blur-2xl border-r border-[var(--border)] transition-all duration-500 lg:relative lg:translate-x-0 lg:flex lg:flex-col shadow-[20px_0_40px_rgba(0,0,0,0.1)]"
         >
             <div class="flex items-center justify-between px-7 py-8">
                 <div class="flex items-center gap-3 group">
@@ -123,7 +138,7 @@ const isActive = (href) => {
                     class="flex items-center gap-3.5 px-5 py-3 rounded-2xl text-sm font-bold transition-all duration-300 group relative overflow-hidden"
                     :class="isActive(item.href) 
                         ? 'bg-gradient-to-r from-[var(--brand)] to-orange-400 text-white shadow-xl shadow-[var(--brand-glow)] active-nav-glow' 
-                        : 'text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--text-strong)] border border-transparent hover:border-white/10'"
+                        : 'text-[var(--text-base)] opacity-70 hover:opacity-100 hover:bg-white/5 hover:text-[var(--text-strong)] border border-transparent hover:border-white/10'"
                 >
                     <div 
                         class="w-5 h-5 flex items-center justify-center transition-all duration-500 group-hover:scale-125"
@@ -213,23 +228,37 @@ const isActive = (href) => {
                 </div>
             </header>
 
-            <!-- Flash messages -->
-            <div v-if="flash?.success || flash?.error" class="px-8 pt-6">
-                <div
-                    v-if="flash.success"
-                    class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-6 py-4 rounded-2xl text-sm font-bold shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500"
-                >
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                    {{ flash.success }}
+            <!-- Flash messages (auto-dismiss after 4.5s) -->
+            <Transition name="flash">
+                <div v-if="flashVisible && (flash?.success || flash?.error)" class="px-8 pt-6" aria-live="polite">
+                    <div
+                        v-if="flash.success"
+                        role="alert"
+                        class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-6 py-4 rounded-2xl text-sm font-bold shadow-lg flex items-center justify-between gap-3"
+                    >
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            {{ flash.success }}
+                        </div>
+                        <button @click="flashVisible = false" class="opacity-50 hover:opacity-100 transition-opacity flex-shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <div
+                        v-if="flash.error"
+                        role="alert"
+                        class="bg-red-500/10 border border-red-500/30 text-red-400 px-6 py-4 rounded-2xl text-sm font-bold shadow-lg flex items-center justify-between gap-3"
+                    >
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            {{ flash.error }}
+                        </div>
+                        <button @click="flashVisible = false" class="opacity-50 hover:opacity-100 transition-opacity flex-shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
                 </div>
-                <div
-                    v-if="flash.error"
-                    class="bg-red-500/10 border border-red-500/30 text-red-400 px-6 py-4 rounded-2xl text-sm font-bold shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500"
-                >
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    {{ flash.error }}
-                </div>
-            </div>
+            </Transition>
 
             <!-- Page content -->
             <main class="flex-1 p-8 overflow-y-auto custom-scrollbar">
@@ -260,4 +289,10 @@ const isActive = (href) => {
 .font-heading {
     font-family: 'Outfit', sans-serif;
 }
+
+/* Flash auto-dismiss transition */
+.flash-enter-active { transition: all 350ms cubic-bezier(0.16, 1, 0.3, 1); }
+.flash-leave-active { transition: all 300ms ease; }
+.flash-enter-from   { opacity: 0; transform: translateY(-10px); }
+.flash-leave-to     { opacity: 0; transform: translateY(-6px); }
 </style>

@@ -1,0 +1,1 @@
+import{C as e,D as t,y as n}from"./app-Bbpu6G5y.js";import{t as r}from"./_plugin-vue_export-helper-BOai-rQB.js";var i={};function a(r,i){return t(),n(`img`,e({src:`/mylogo.png`,alt:`Logo`},r.$attrs),null,16)}var o=r(i,[[`render`,a]]);export{o as t};

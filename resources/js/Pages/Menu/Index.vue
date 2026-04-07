@@ -43,12 +43,12 @@ const allItems = props.categories?.flatMap(c => c.menu_items?.map(i => ({ ...i, 
         <div class="space-y-6">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-2xl font-black tracking-tight text-[var(--text-strong)]">Menu Management</h1>
-                    <p class="text-sm text-[var(--text-muted)]">Manage your dishes, drinks, and categories.</p>
+                    <h1 class="text-2xl font-black tracking-tight text-[var(--text-strong)]">{{ __('Menu Management') }}</h1>
+                    <p class="text-sm text-[var(--text-muted)]">{{ __('Manage your dishes, drinks, and categories.') }}</p>
                 </div>
                 <div class="flex gap-2">
-                    <Link :href="route('admin.categories.index')" class="px-4 py-2 text-sm bg-[var(--bg-card)] text-[var(--text-strong)] border border-[var(--border)] rounded-xl hover:border-[var(--brand)] transition-all">Categories</Link>
-                    <Link :href="route('admin.menu.create')" class="px-4 py-2 text-sm bg-[var(--brand)] text-white rounded-xl hover:bg-[var(--brand-hover)] font-bold shadow-lg shadow-[var(--brand-glow)] transition-all">+ New Item</Link>
+                    <Link :href="route('admin.categories.index')" class="px-4 py-2 text-sm bg-[var(--bg-card)] text-[var(--text-strong)] border border-[var(--border)] rounded-xl hover:border-[var(--brand)] transition-all">{{ __('Categories') }}</Link>
+                    <Link :href="route('admin.menu.create')" class="px-4 py-2 text-sm bg-[var(--brand)] text-white rounded-xl hover:bg-[var(--brand-hover)] font-bold shadow-lg shadow-[var(--brand-glow)] transition-all">+ {{ __('New Item') }}</Link>
                 </div>
             </div>
 
@@ -60,7 +60,7 @@ const allItems = props.categories?.flatMap(c => c.menu_items?.map(i => ({ ...i, 
                     :class="!selectedCategoryFilter 
                         ? 'bg-[var(--brand)] text-white border-transparent' 
                         : 'bg-[var(--bg-card)] text-[var(--text-muted)] border-[var(--border)] hover:border-[var(--brand)]'"
-                >All Items</button>
+                >{{ __('All Items') }}</button>
                 <button
                     v-for="cat in categories"
                     :key="cat.id"
@@ -73,14 +73,14 @@ const allItems = props.categories?.flatMap(c => c.menu_items?.map(i => ({ ...i, 
             </div>
 
             <!-- Items table -->
-            <div class="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] overflow-hidden shadow-sm">
-                <table class="w-full text-sm border-collapse">
+            <div class="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] overflow-x-auto shadow-sm">
+                <table class="w-full text-sm border-collapse min-w-[600px] sm:min-w-0">
                     <thead>
                         <tr class="bg-[var(--bg-surface)] border-b border-[var(--border)]">
-                            <th class="text-left px-6 py-4 font-bold text-[var(--text-strong)] uppercase tracking-wider text-[10px]">Item Details</th>
-                            <th class="text-left px-6 py-4 font-bold text-[var(--text-strong)] uppercase tracking-wider text-[10px] hidden md:table-cell">Category</th>
-                            <th class="text-right px-6 py-4 font-bold text-[var(--text-strong)] uppercase tracking-wider text-[10px]">Price</th>
-                            <th class="text-center px-6 py-4 font-bold text-[var(--text-strong)] uppercase tracking-wider text-[10px] hidden sm:table-cell">Status</th>
+                            <th class="text-left px-6 py-4 font-bold text-[var(--text-strong)] uppercase tracking-wider text-[10px]">{{ __('Item Details') }}</th>
+                            <th class="text-left px-6 py-4 font-bold text-[var(--text-strong)] uppercase tracking-wider text-[10px] hidden md:table-cell">{{ __('Category') }}</th>
+                            <th class="text-right px-6 py-4 font-bold text-[var(--text-strong)] uppercase tracking-wider text-[10px]">{{ __('Price') }}</th>
+                            <th class="text-center px-6 py-4 font-bold text-[var(--text-strong)] uppercase tracking-wider text-[10px] hidden sm:table-cell">{{ __('Status') }}</th>
                             <th class="px-6 py-4"></th>
                         </tr>
                     </thead>
@@ -123,7 +123,7 @@ const allItems = props.categories?.flatMap(c => c.menu_items?.map(i => ({ ...i, 
                                             : 'bg-red-500/10 text-red-600 border border-red-500/20'"
                                     >
                                         <span class="w-1.5 h-1.5 rounded-full" :class="item.is_available ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'"></span>
-                                        {{ item.is_available ? 'Active' : 'Unavailable' }}
+                                        {{ item.is_available ? __('Active') : __('Unavailable') }}
                                     </button>
                                 </td>
                                 <td class="px-6 py-4 text-right">

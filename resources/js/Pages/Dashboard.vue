@@ -141,8 +141,10 @@ const statusColors = {
                     <div class="divide-y divide-[var(--border)] overflow-y-auto max-h-[500px]">
                         <div v-for="order in recentOrders" :key="order.id" class="px-6 py-4 flex items-center justify-between group hover:bg-[var(--bg-surface)] transition-all">
                             <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center text-lg shadow-inner group-hover:border-[var(--brand)] transition-colors">
-                                    🪑
+                                <div class="w-10 h-10 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center shadow-inner group-hover:border-[var(--brand)] transition-colors flex-shrink-0">
+                                    <svg class="w-5 h-5 text-[var(--text-muted)] group-hover:text-[var(--brand)] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M19.5 3v11.25a2.25 2.25 0 01-2.25 2.25H15m-6.75 0v3a2.25 2.25 0 002.25 2.25h3a2.25 2.25 0 002.25-2.25v-3M3.75 7.5h16.5"/>
+                                    </svg>
                                 </div>
                                 <div>
                                     <div class="text-sm font-black italic text-[var(--text-strong)]">Table {{ order.restaurant_table?.number }}</div>

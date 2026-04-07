@@ -6,40 +6,46 @@
 
 @layer base {
     :root {
-        /* Premium Day Mode - Bright, Architectural, Clean (Fast Casual Vibe) */
+        /* Premium Day Mode */
         --bg-main: #f8fafc;
         --bg-card: #ffffff;
         --bg-surface: #f1f5f9;
         --border: #e2e8f0;
-        
+
         --text-strong: #0f172a;
         --text-base: #334155;
         --text-muted: #64748b;
-        
+
         /* Vibrant Actions */
-        --brand: #f97316; /* Orange 500 */
-        --brand-hover: #ea580c; /* Orange 600 */
+        --brand: #f97316;
+        --brand-hover: #ea580c;
         --brand-glow: rgba(249, 115, 22, 0.2);
-        
-        /* Status Tracking */
-        --success: #10b981; /* Emerald 500 */
-        --danger: #ef4444; /* Red 500 */
-        --warning: #f59e0b; /* Amber 500 */
-        --info: #3b82f6; /* Blue 500 */
+
+        /* Status */
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --info: #3b82f6;
+
+        /* Action Gradients */
+        --gradient-success: linear-gradient(135deg, #10b981, #059669);
+        --gradient-purple: linear-gradient(135deg, #a855f7, #7c3aed);
+        --gradient-brand: linear-gradient(135deg, #fb923c, #f97316);
+        --gradient-info: linear-gradient(135deg, #60a5fa, #3b82f6);
     }
 
     .dark {
-        /* Premium Night Mode - "Midnight" Fine Dining / KDS Vibe */
-        --bg-main: #0B0E14; /* Deep Abyss */
-        --bg-card: #141A23; /* Elevated Surface */
-        --bg-surface: #1E2631; /* Interactive Surface */
-        --border: #2A3441; /* Soft Stroke */
-        
+        /* Premium Night Mode */
+        --bg-main: #0B0E14;
+        --bg-card: #141A23;
+        --bg-surface: #1E2631;
+        --border: #2A3441;
+
         --text-strong: #F8FAFC;
         --text-base: #CBD5E1;
         --text-muted: #64748B;
-        
-        --brand: #FB923C; /* Orange 400 */
+
+        --brand: #FB923C;
         --brand-hover: #F97316;
         --brand-glow: rgba(251, 146, 60, 0.15);
 
@@ -47,6 +53,11 @@
         --danger: #EF4444;
         --warning: #FBBF24;
         --info: #60A5FA;
+
+        --gradient-success: linear-gradient(135deg, #10b981, #059669);
+        --gradient-purple: linear-gradient(135deg, #a855f7, #7c3aed);
+        --gradient-brand: linear-gradient(135deg, #fb923c, #f97316);
+        --gradient-info: linear-gradient(135deg, #60a5fa, #3b82f6);
     }
 
     body {
@@ -55,12 +66,10 @@
         @apply antialiased;
         transition: background-color 300ms, color 300ms;
         font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-        /* Force touch manipulation globally to prevent zoom on tap on iPads */
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
     }
 
-    /* Assigning the premium font to headings */
     h1, h2, h3, h4, h5, h6, .font-heading {
         font-family: 'Outfit', sans-serif;
         color: var(--text-strong);
@@ -69,62 +78,76 @@
 }
 
 @layer components {
-    /* Premium App Panels & Cards */
+    /* Cards */
     .glass-panel {
         background-color: color-mix(in srgb, var(--bg-card) 80%, transparent);
         @apply border border-[var(--border)] shadow-sm backdrop-blur-xl rounded-2xl;
     }
-    
+
     .glass-card {
         background-color: color-mix(in srgb, var(--bg-card) 90%, transparent);
         @apply border border-[var(--border)] shadow-sm rounded-2xl transition-all duration-300;
     }
-    
+
     .glass-card:hover {
         @apply shadow-md;
         border-color: color-mix(in srgb, var(--brand) 30%, transparent);
     }
 
-    /* POS Massive Tap Targets */
+    /* Tap / Haptic */
     .tap-target {
         @apply min-h-[56px] min-w-[56px] flex items-center justify-center;
     }
 
-    /* Touch-Optimized Haptic Buttons */
     .btn-haptic {
         @apply relative overflow-hidden active:scale-[0.98] transition-transform duration-100 ease-out select-none;
     }
 
+    /* Buttons */
     .btn-primary {
         @apply btn-haptic bg-[var(--brand)] text-white font-bold rounded-xl shadow-md shadow-[var(--brand-glow)] hover:bg-[var(--brand-hover)] border border-transparent;
     }
-    
+
     .btn-secondary {
         @apply btn-haptic font-bold rounded-xl border transition-colors;
         background-color: var(--bg-surface);
         color: var(--text-strong);
         border-color: var(--border);
     }
-    
+
     .btn-danger {
         @apply btn-haptic bg-[var(--danger)] text-white font-bold rounded-xl shadow-md shadow-red-500/20 hover:bg-red-600 border border-transparent;
     }
 
-    /* Interactive Icon Buttons */
+    /* Gradient semantic buttons */
+    .btn-success {
+        @apply btn-haptic text-white font-bold rounded-xl border border-transparent;
+        background: var(--gradient-success);
+        box-shadow: 0 4px 15px -4px rgba(16, 185, 129, 0.4);
+    }
+    .btn-success:hover { opacity: 0.92; }
+
+    .btn-purple {
+        @apply btn-haptic text-white font-bold rounded-xl border border-transparent;
+        background: var(--gradient-purple);
+        box-shadow: 0 4px 15px -4px rgba(168, 85, 247, 0.4);
+    }
+    .btn-purple:hover { opacity: 0.92; }
+
     .btn-icon {
         @apply tap-target rounded-xl border transition-all duration-200 active:scale-95;
         background-color: var(--bg-surface);
         color: var(--text-muted);
         border-color: var(--border);
     }
-    
+
     .btn-icon:hover {
         color: var(--brand);
         border-color: var(--brand);
         background-color: var(--brand-glow);
     }
 
-    /* Inputs tailored for quick POS tapping or scanning */
+    /* Inputs */
     .input-premium {
         @apply w-full font-medium rounded-xl px-4 py-3 sm:py-2.5 focus:ring-2 focus:ring-[var(--brand)] focus:border-transparent transition-all outline-none;
         background-color: var(--bg-surface);
@@ -134,20 +157,53 @@
     .input-premium::placeholder {
         color: var(--text-muted);
     }
+
+    /* Report sub-navigation links */
+    .report-nav-link {
+        @apply px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-xl border transition-all duration-200;
+        background-color: var(--bg-surface);
+        color: var(--text-muted);
+        border-color: var(--border);
+    }
+    .report-nav-link:hover {
+        color: var(--text-strong);
+        border-color: color-mix(in srgb, var(--brand) 50%, transparent);
+    }
+    .report-nav-link.active {
+        background: var(--gradient-brand);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 4px 12px -4px var(--brand-glow);
+    }
+
+    /* KDS status chips */
+    .kds-badge {
+        @apply inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border;
+    }
 }
 
-/* Custom Scrollbar for POS */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+/* WebKit scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted); }
+
+/* Firefox scrollbar (named class) */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
 }
-::-webkit-scrollbar-track {
-    background: transparent;
+
+/* Inertia / Vue page transitions */
+.page-enter-active,
+.page-leave-active {
+    transition: opacity 180ms ease, transform 180ms ease;
 }
-::-webkit-scrollbar-thumb {
-    background-color: var(--border);
-    border-radius: 9999px;
+.page-enter-from {
+    opacity: 0;
+    transform: translateY(6px);
 }
-::-webkit-scrollbar-thumb:hover {
-    background-color: var(--text-muted);
+.page-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
 }

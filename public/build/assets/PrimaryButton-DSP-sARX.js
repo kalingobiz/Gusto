@@ -1,1 +1,0 @@
-import{D as e,k as t,y as n}from"./app-BHUdu-Lk.js";var r=[`type`],i={__name:`PrimaryButton`,props:{type:{type:String,default:`submit`}},setup(i){return(a,o)=>(e(),n(`button`,{type:i.type,class:`btn-primary inline-flex items-center px-4 py-2 text-xs font-semibold uppercase tracking-widest disabled:opacity-25 transition`},[t(a.$slots,`default`)],8,r))}};export{i as t};

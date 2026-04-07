@@ -1,5 +1,6 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
+import ReportNav from '@/Components/ReportNav.vue';
 import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -33,12 +34,15 @@ function pctClass(pct) {
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-black text-[var(--text-strong)]">BOM Variance Report</h1>
+                    <h1 class="text-3xl font-black text-[var(--text-strong)]">BOM <span class="text-[var(--brand)]">Variance</span></h1>
                     <p class="text-sm text-[var(--text-muted)]">Compares theoretical stock consumption against actual movements. Variances &gt;5% are flagged.</p>
                 </div>
-                <div v-if="flagged > 0" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--danger)]/10 border border-[var(--danger)]/30 text-[var(--danger)] font-bold text-sm">
-                    <span class="w-2 h-2 rounded-full bg-[var(--danger)] animate-pulse"></span>
-                    {{ flagged }} ingredient{{ flagged > 1 ? 's' : '' }} flagged
+                <div class="flex items-center gap-3 flex-wrap">
+                    <div v-if="flagged > 0" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--danger)]/10 border border-[var(--danger)]/30 text-[var(--danger)] font-bold text-sm">
+                        <span class="w-2 h-2 rounded-full bg-[var(--danger)] animate-pulse"></span>
+                        {{ flagged }} ingredient{{ flagged > 1 ? 's' : '' }} flagged
+                    </div>
+                    <ReportNav />
                 </div>
             </div>
 

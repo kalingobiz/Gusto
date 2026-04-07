@@ -32,7 +32,12 @@ function onImageChange(e) {
 
 function submit() {
     if (isEdit) {
-        form.post(route('admin.menu.update', props.item.id), { _method: 'put' });
+        form.transform((data) => ({
+            ...data,
+            _method: 'PUT',
+        })).post(route('admin.menu.update', props.item.id), {
+            forceFormData: true,
+        });
     } else {
         form.post(route('admin.menu.store'));
     }

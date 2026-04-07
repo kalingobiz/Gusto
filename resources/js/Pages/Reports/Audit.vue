@@ -1,5 +1,6 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
+import ReportNav from '@/Components/ReportNav.vue';
 import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -24,9 +25,12 @@ const actionBadgeClass = {
     <AppLayout>
         <div class="space-y-6 max-w-7xl mx-auto">
             <!-- Header -->
-            <div>
-                <h1 class="text-3xl font-black text-[var(--text-strong)]">Audit Trail</h1>
-                <p class="text-sm text-[var(--text-muted)]">Complete immutable log of every order item action. Use this to investigate discrepancies.</p>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-black text-[var(--text-strong)]">Audit <span class="text-[var(--brand)]">Trail</span></h1>
+                    <p class="text-sm text-[var(--text-muted)]">Complete immutable log of every order item action. Use this to investigate discrepancies.</p>
+                </div>
+                <ReportNav />
             </div>
 
             <!-- Date filter -->
